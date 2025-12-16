@@ -1,73 +1,43 @@
-# Welcome to your Lovable project
+Zonaprint — E-Commerce Percetakan Purwakarta
 
-## Project info
+Zonaprint adalah platform website e-commerce percetakan yang dirancang untuk menjawab kebutuhan cetak masyarakat dan pelaku usaha di Purwakarta dan sekitarnya. Proyek ini berfokus pada kemudahan pemesanan, transparansi layanan, serta efisiensi proses—dari layar pengguna hingga mesin cetak.
 
-**URL**: https://lovable.dev/projects/91fbcb03-73d4-4c8c-8264-f330ceae44bc
+Website ini menjadi jembatan antara kebutuhan visual pelanggan (spanduk, banner, brosur, kartu nama, dan produk cetak lain) dengan layanan percetakan lokal yang cepat, terjangkau, dan dapat dipercaya.
 
-## How can I edit this code?
+Tujuan Proyek
 
-There are several ways of editing your application.
+Mendigitalisasi layanan percetakan lokal Purwakarta
 
-**Use Lovable**
+Mempermudah pelanggan memesan produk cetak tanpa harus datang langsung
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/91fbcb03-73d4-4c8c-8264-f330ceae44bc) and start prompting.
+Menyediakan katalog produk, estimasi harga, dan alur pemesanan yang jelas
 
-Changes made via Lovable will be committed automatically to this repo.
+Mendukung UMKM, pelajar, dan institusi lokal dengan solusi cetak yang modern
 
-**Use your preferred IDE**
+Ini bukan sekadar website—ini infrastruktur niaga lokal.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Fitur Utama (Tahap Pengembangan)
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+Katalog produk percetakan
 
-Follow these steps:
+Informasi spesifikasi bahan & ukuran
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+Alur pemesanan online
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+Kontak & integrasi komunikasi (WhatsApp / form)
 
-# Step 3: Install the necessary dependencies.
-npm i
+Desain responsif untuk desktop & mobile
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+Teknologi yang Digunakan
 
-**Edit a file directly in GitHub**
+Proyek ini dibangun dengan stack modern agar stabil, cepat, dan mudah dikembangkan:
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Vite
 
-**Use GitHub Codespaces**
+React
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+TypeScript
 
-## What technologies are used for this project?
+Tailwind CSS
 
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/91fbcb03-73d4-4c8c-8264-f330ceae44bc) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+shadcn/ui
