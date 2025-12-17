@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import SiteLayout from "./layouts/SiteLayout";
+import ScrollToTop from "./components/ScrollToTop";
 import ProductsPage from "./pages/Products";
 import ProductDetailPage from "./pages/ProductDetail";
 import CartPage from "./pages/Cart";
@@ -36,6 +37,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <ScrollToTop />
             <Routes>
               <Route element={<SiteLayout />}>
                 <Route path="/" element={<Index />} />

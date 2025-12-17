@@ -32,7 +32,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="bg-primary-deep text-primary-foreground">
+    <footer className="bg-primary-deep text-primary-foreground dark:bg-slate-950 dark:text-slate-100">
       {/* Main Footer */}
       <div className="container mx-auto px-4 lg:px-8 py-16">
         <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-12">
@@ -43,23 +43,23 @@ const Footer = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
             >
-              <img src={logo} alt="ZONAPRINT" className="h-12 mb-6 brightness-0 invert" />
-              <p className="text-primary-foreground/80 mb-6 max-w-sm">
+              <img src={logo} alt="ZONAPRINT" className="h-12 mb-6 brightness-0 invert dark:brightness-100 dark:invert-0" />
+              <p className="text-primary-foreground/80 dark:text-slate-300 mb-6 max-w-sm">
                 Solusi cetak digital terpercaya untuk semua kebutuhan bisnis dan personal Anda. Kualitas premium, harga terjangkau.
               </p>
               
               {/* Contact Info */}
               <div className="space-y-3">
-                <div className="flex items-center gap-3 text-primary-foreground/80">
-                  <Phone className="w-5 h-5 text-accent" />
+                <div className="flex items-center gap-3 text-primary-foreground/80 dark:text-slate-300">
+                  <Phone className="w-5 h-5 text-accent dark:text-amber-400" />
                   <span>+62 812-3456-7890</span>
                 </div>
-                <div className="flex items-center gap-3 text-primary-foreground/80">
-                  <Mail className="w-5 h-5 text-accent" />
+                <div className="flex items-center gap-3 text-primary-foreground/80 dark:text-slate-300">
+                  <Mail className="w-5 h-5 text-accent dark:text-amber-400" />
                   <span>info@zonaprint.com</span>
                 </div>
-                <div className="flex items-center gap-3 text-primary-foreground/80">
-                  <MapPin className="w-5 h-5 text-accent" />
+                <div className="flex items-center gap-3 text-primary-foreground/80 dark:text-slate-300">
+                  <MapPin className="w-5 h-5 text-accent dark:text-amber-400" />
                   <span>Purwakarta, Indonesia</span>
                 </div>
               </div>
@@ -81,7 +81,7 @@ const Footer = () => {
                   <li key={index}>
                     <Link
                       to={link.to}
-                      className="text-primary-foreground/80 hover:text-accent transition-colors duration-300 inline-block"
+                      className="text-primary-foreground/80 dark:text-slate-300 hover:text-accent dark:hover:text-amber-400 transition-colors duration-300 inline-block"
                     >
                       {link.label}
                     </Link>
@@ -98,7 +98,7 @@ const Footer = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.4 }}
-          className="flex gap-4 mt-12 pt-8 border-t border-primary-foreground/20"
+          className="flex gap-4 mt-12 pt-8 border-t border-primary-foreground/20 dark:border-slate-800"
         >
           {socialLinks.map((social, index) => {
             const Icon = social.icon;
@@ -108,7 +108,7 @@ const Footer = () => {
                 href={social.href}
                 aria-label={social.label}
                 whileHover={{ scale: 1.1, y: -2 }}
-                className="w-10 h-10 rounded-full bg-primary-foreground/10 hover:bg-accent flex items-center justify-center transition-colors duration-300"
+                className="w-10 h-10 rounded-full bg-primary-foreground/10 dark:bg-slate-800 hover:bg-accent dark:hover:bg-amber-400/90 flex items-center justify-center transition-colors duration-300"
               >
                 <Icon className="w-5 h-5" />
               </motion.a>
@@ -118,15 +118,15 @@ const Footer = () => {
       </div>
 
       {/* Bottom Bar */}
-      <div className="border-t border-primary-foreground/20">
+      <div className="border-t border-primary-foreground/20 dark:border-slate-800">
         <div className="container mx-auto px-4 lg:px-8 py-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-primary-foreground/80">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-primary-foreground/80 dark:text-slate-400">
             <p>© 2024 ZONAPRINT. All rights reserved.</p>
             <div className="flex gap-6">
-              <Link to="/about" className="hover:text-accent transition-colors">
+              <Link to="/about" className="hover:text-accent dark:hover:text-amber-400 transition-colors">
                 Privacy Policy
               </Link>
-              <Link to="/about" className="hover:text-accent transition-colors">
+              <Link to="/about" className="hover:text-accent dark:hover:text-amber-400 transition-colors">
                 Terms & Conditions
               </Link>
             </div>

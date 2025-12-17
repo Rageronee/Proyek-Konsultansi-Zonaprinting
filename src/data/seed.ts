@@ -20,6 +20,7 @@ export const seedProducts: Product[] = [
     category: "Marketing",
     image: "https://images.unsplash.com/photo-1553877522-43269d4ea984?auto=format&fit=crop&w=900&q=80",
     featured: true,
+    options: ["A4 150gsm lipat tiga", "A5 150gsm lipat dua", "A4 210gsm tanpa lipat"],
   },
   {
     id: "prd-03",
@@ -56,6 +57,7 @@ export const seedProducts: Product[] = [
     stock: 150,
     category: "Digital Printing",
     image: "https://images.unsplash.com/photo-1505685296765-3a2736de412f?auto=format&fit=crop&w=900&q=80",
+    options: ["A3 210gsm glossy", "A3 260gsm doff"],
   },
   {
     id: "prd-07",

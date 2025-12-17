@@ -17,7 +17,7 @@ const slugMap: Record<string, { title: string; category: string }> = {
 
 const CategoryProductsPage = () => {
   const { slug } = useParams();
-  const { products, addToCart } = useShop();
+  const { products } = useShop();
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
   const badgeTone = (cat: string) => {
@@ -102,11 +102,14 @@ const CategoryProductsPage = () => {
                 <p className="text-xs text-muted-foreground">Stok: {product.stock}</p>
               </CardContent>
               <CardFooter className="flex gap-2">
-                <Button variant="outline" className="w-1/2" asChild>
+                <Button variant="outline" className="w-1/2 text-xs md:text-sm" asChild>
                   <Link to={`/products/${product.id}`}>Detail</Link>
                 </Button>
-                <Button className="w-1/2" onClick={() => addToCart(product.id)}>
-                  Tambah ke Keranjang
+                <Button
+                  className="w-1/2 text-xs md:text-sm whitespace-nowrap"
+                  asChild
+                >
+                  <Link to={`/products/${product.id}`}>Pilih &amp; Tambah</Link>
                 </Button>
               </CardFooter>
             </Card>

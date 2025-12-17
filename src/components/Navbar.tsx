@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Menu, ShoppingCart, Upload, UserCircle, X } from "lucide-react";
+import { Menu, Moon, ShoppingCart, Sun, Upload, UserCircle, X } from "lucide-react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import logo from "@/assets/logo-zonaprint.png";
 import { useAuth } from "@/providers/AuthProvider";
@@ -10,8 +10,13 @@ import { useShop } from "@/providers/ShopProvider";
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [authLoading, setAuthLoading] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">(
+    (localStorage.getItem("zp-theme") as "light" | "dark") || "light",
+  );
   const { user, isAdmin, isAuthenticated, logout } = useAuth();
-  const { cart } = useShop();
+  const { cart, clearCart } = useShop();
   const navigate = useNavigate();
 
   const cartCount = useMemo(() => cart.reduce((sum, item) => sum + item.quantity, 0), [cart]);
@@ -23,6 +28,19 @@ const Navbar = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+    localStorage.setItem("zp-theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+  };
 
   const menuItems = [
     { name: "Home", to: "/" },
@@ -36,7 +54,7 @@ const Navbar = () => {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? "glass shadow-lg" : "bg-transparent"
+        isScrolled ? "glass shadow-lg" : "bg-background/80 dark:bg-slate-950/80"
       }`}
     >
       <div className="container mx-auto px-4 lg:px-8">
@@ -88,6 +106,19 @@ const Navbar = () => {
 
           {/* CTA Button - Desktop */}
           <div className="hidden md:flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full border border-slate-200/70 dark:border-slate-700"
+              onClick={toggleTheme}
+              aria-label="Toggle theme"
+            >
+              {theme === "dark" ? (
+                <Sun className="h-4 w-4 text-amber-300" />
+              ) : (
+                <Moon className="h-4 w-4 text-slate-700" />
+              )}
+            </Button>
             {!isAdmin && (
               <Button variant="ghost" className="relative" onClick={() => navigate("/cart")}>
               <ShoppingCart className="h-5 w-5" />
@@ -108,10 +139,7 @@ const Navbar = () => {
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
-                  onClick={() => {
-                    if (!window.confirm("Yakin ingin logout dari akun ini?")) return;
-                    logout();
-                  }}
+                  onClick={() => setShowLogoutConfirm(true)}
                   className="hover:bg-red-50 hover:text-red-600"
                 >
                   Logout
@@ -133,13 +161,30 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden text-foreground hover:text-primary transition-colors"
-          >
-            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          {/* Mobile Right Controls */}
+          <div className="md:hidden flex items-center gap-2">
+            {!isAdmin && (
+              <button
+                onClick={() => navigate("/cart")}
+                className="relative rounded-full p-2 text-foreground hover:text-primary transition-colors"
+                aria-label="Keranjang"
+              >
+                <ShoppingCart className="h-5 w-5" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-1 -right-1 rounded-full bg-primary text-white text-[10px] px-1 py-0.5">
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+            )}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden rounded-full p-2 text-foreground hover:text-primary transition-colors bg-background/70 dark:bg-slate-900/70 border border-slate-200/70 dark:border-slate-700"
+              aria-label="Menu"
+            >
+              {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Menu */}
@@ -176,6 +221,19 @@ const Navbar = () => {
                 Keranjang {cartCount > 0 && <span className="ml-1">({cartCount})</span>}
               </Button>
               )}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="self-start rounded-full border border-slate-200/70 dark:border-slate-700"
+                onClick={toggleTheme}
+                aria-label="Toggle theme"
+              >
+                {theme === "dark" ? (
+                  <Sun className="h-4 w-4 text-amber-300" />
+                ) : (
+                  <Moon className="h-4 w-4 text-slate-700" />
+                )}
+              </Button>
               {isAuthenticated && !isAdmin && (
                 <Button variant="outline" onClick={() => navigate("/profile")}>
                   {user?.name ?? "Profil"}
@@ -184,10 +242,7 @@ const Navbar = () => {
               {isAuthenticated ? (
                 <Button
                   variant="destructive"
-                  onClick={() => {
-                    if (!window.confirm("Yakin ingin logout dari akun ini?")) return;
-                    logout();
-                  }}
+                  onClick={() => setShowLogoutConfirm(true)}
                 >
                   Logout
                 </Button>
@@ -206,6 +261,50 @@ const Navbar = () => {
           </motion.div>
         )}
       </div>
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="rounded-2xl bg-slate-900 text-white px-6 py-5 shadow-2xl max-w-sm w-full mx-4">
+              <p className="font-semibold mb-2 text-amber-300">Konfirmasi Logout</p>
+            <p className="text-sm text-slate-200 mb-4">
+              Apakah Anda yakin ingin keluar dari akun ini?
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                className="border-slate-600 text-slate-200 hover:bg-slate-800"
+                onClick={() => setShowLogoutConfirm(false)}
+              >
+                Batal
+              </Button>
+              <Button
+                className="bg-amber-500 text-slate-900 hover:bg-amber-400"
+                onClick={() => {
+                  setAuthLoading(true);
+                  setShowLogoutConfirm(false);
+                  setTimeout(() => {
+                    clearCart();
+                    logout();
+                    window.location.reload();
+                  }, 500);
+                }}
+              >
+                Ya, Logout
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      {authLoading && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40">
+          <div className="rounded-2xl bg-slate-900 text-white px-6 py-4 flex items-center gap-3 shadow-2xl">
+            <div className="w-8 h-8 rounded-full border-2 border-amber-400 border-t-transparent animate-spin" />
+            <div>
+              <p className="font-semibold text-amber-300">Mengakhiri sesi...</p>
+              <p className="text-xs text-slate-300">Sebentar, kami sedang membersihkan data sesi Anda.</p>
+            </div>
+          </div>
+        </div>
+      )}
     </motion.nav>
   );
 };

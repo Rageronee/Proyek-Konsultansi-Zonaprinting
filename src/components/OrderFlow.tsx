@@ -1,7 +1,9 @@
 import { motion } from "framer-motion";
 import { ShoppingCart, Upload, PackageCheck } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const OrderFlow = () => {
+  const navigate = useNavigate();
   const steps = [
     {
       icon: ShoppingCart,
@@ -12,7 +14,7 @@ const OrderFlow = () => {
     {
       icon: Upload,
       title: "Upload Desain",
-      description: "Upload file desain Anda atau gunakan template kami yang menariks",
+      description: "Upload file desain Anda atau gunakan template kami yang menarik",
       color: "accent",
     },
     {
@@ -100,6 +102,7 @@ const OrderFlow = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             className="px-8 py-4 gradient-primary text-primary-foreground rounded-full font-semibold text-lg shadow-glow hover:shadow-elegant transition-all duration-300"
+            onClick={() => navigate("/products")}
           >
             Mulai Pesan Sekarang
           </motion.button>

@@ -19,6 +19,7 @@ const emptyDraft: Draft = {
   category: "",
   image: "",
   featured: false,
+  options: [],
 };
 
 const AdminProductsPage = () => {
@@ -117,6 +118,26 @@ const AdminProductsPage = () => {
               onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
               required
             />
+            <div className="md:col-span-2 space-y-2">
+              <Label htmlFor="options">Opsi ukuran / gramasi (opsional)</Label>
+              <Input
+                id="options"
+                placeholder='Contoh: A5 150gsm, A4 150gsm, B5 120gsm'
+                value={draft.options?.join(", ") ?? ""}
+                onChange={(e) =>
+                  setDraft((d) => ({
+                    ...d,
+                    options: e.target.value
+                      .split(",")
+                      .map((opt) => opt.trim())
+                      .filter(Boolean),
+                  }))
+                }
+              />
+              <p className="text-xs text-muted-foreground">
+                Isi dengan koma untuk memisahkan pilihan. Opsi ini akan muncul sebagai tombol pilihan di halaman detail produk.
+              </p>
+            </div>
             <Button type="submit" className="md:col-span-2">
               {editingId ? "Simpan Perubahan" : "Tambah Produk"}
             </Button>
@@ -141,6 +162,11 @@ const AdminProductsPage = () => {
                 <div className="flex flex-wrap gap-2 text-sm">
                   <Badge variant="secondary">Harga: Rp {product.price.toLocaleString("id-ID")}</Badge>
                   <Badge variant="outline">Stok: {product.stock} pcs</Badge>
+                  {product.options && product.options.length > 0 && (
+                    <Badge variant="outline" className="text-[11px]">
+                      {product.options.length} opsi ukuran/gramasi
+                    </Badge>
+                  )}
                 </div>
               </CardContent>
               <CardFooter className="flex gap-2">

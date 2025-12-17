@@ -87,21 +87,16 @@ const Hero = () => {
             >
               <Button
                 size="lg"
-                className="bg-amber-500 text-white shadow-glow hover:bg-amber-400 transition-all duration-300 hover:scale-105 text-lg"
+                className="bg-amber-500 text-white shadow-glow hover:bg-amber-400 transition-all duration-300 hover:scale-105 text-lg px-6"
                 asChild
               >
-                <Link to="/products">
-                  Pesan Sekarang
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                <Link
+                  to="/products"
+                  className="flex items-center justify-center gap-3"
+                >
+                  <span>Pesan Sekarang</span>
+                  <ArrowRight className="h-5 w-5" />
                 </Link>
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300 text-lg"
-                asChild
-              >
-                <Link to="/products">Lihat Produk</Link>
               </Button>
             </motion.div>
 

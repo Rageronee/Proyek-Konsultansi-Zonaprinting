@@ -1,25 +1,25 @@
 import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Progress } from "@/components/ui/progress";
 import { useShop } from "@/providers/ShopProvider";
 import { useAuth } from "@/providers/AuthProvider";
 import { useToast } from "@/components/ui/use-toast";
 import { WELCOME_VOUCHER_VALUE_CONST } from "@/components/WelcomeVoucherDialog";
-import { PaymentMethod } from "@/types";
 
 const CheckoutPage = () => {
-  const { cart, products, getCartTotal, checkout, orders } = useShop();
+  const { cart, products, getCartTotal, orders } = useShop();
   const { user, markWelcomeVoucherUsed, updateProfile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [voucherCode, setVoucherCode] = useState("WELCOME25");
   const [voucherAmount, setVoucherAmount] = useState(0);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("qris");
+  const [branch, setBranch] = useState<"purwakarta" | "wanayasa">("purwakarta");
+  const [sending, setSending] = useState<"idle" | "printing" | "redirecting">("idle");
   const [form, setForm] = useState({
     name: user?.name ?? "",
     email: user?.email ?? "",
@@ -35,7 +35,13 @@ const CheckoutPage = () => {
           if (!product) return null;
           return { ...item, product };
         })
-        .filter(Boolean) as Array<{ productId: string; quantity: number; product: (typeof products)[number] }>,
+        .filter(Boolean) as Array<{
+          productId: string;
+          quantity: number;
+          product: (typeof products)[number];
+          selectedOption?: string;
+          note?: string;
+        }>,
     [cart, products],
   );
 
@@ -50,33 +56,7 @@ const CheckoutPage = () => {
 
   const subtotal = getCartTotal();
   const voucherDiscount = voucherAmount;
-  const taxedSubtotal = Math.max(subtotal - voucherDiscount, 0);
-  const tax = taxedSubtotal * 0.11;
-  const grandTotal = taxedSubtotal + tax;
-
-  const sendReceiptEmail = (to: string, orderId: string) => {
-    const subject = encodeURIComponent(`Receipt Pesanan ${orderId}`);
-    const bodyLines = [
-      `Terima kasih telah berbelanja di ZONAPRINT.`,
-      `Order ID: ${orderId}`,
-      `Nama: ${form.name || user?.name}`,
-      `Email: ${form.email || user?.email}`,
-      `Telepon: ${form.phone || "-"}`,
-      `Alamat: ${form.address || "-"}`,
-      "",
-      "Detail Pesanan:",
-      ...cartWithProduct.map(
-        (item) =>
-          `- ${item.product.name} x ${item.quantity} = Rp ${(item.product.price * item.quantity).toLocaleString("id-ID")}`,
-      ),
-      "",
-      `Subtotal: Rp ${subtotal.toLocaleString("id-ID")}`,
-      `Voucher: Rp ${voucherDiscount.toLocaleString("id-ID")}`,
-      `PPN 11%: Rp ${tax.toLocaleString("id-ID")}`,
-      `Total: Rp ${grandTotal.toLocaleString("id-ID")}`,
-    ];
-    window.open(`mailto:${to}?subject=${subject}&body=${encodeURIComponent(bodyLines.join("\n"))}`, "_blank");
-  };
+  const grandTotal = Math.max(subtotal - voucherDiscount, 0);
 
   const handleApplyVoucher = () => {
     if (!user) {
@@ -104,7 +84,7 @@ const CheckoutPage = () => {
     toast({ title: "Voucher diterapkan", description: `Potongan Rp ${voucher.amount.toLocaleString("id-ID")}` });
   };
 
-  const handleCheckout = () => {
+  const handleWhatsappOrder = () => {
     if (!user) {
       navigate("/login");
       return;
@@ -117,59 +97,55 @@ const CheckoutPage = () => {
       });
       return;
     }
+
     updateProfile({
       name: form.name,
       email: form.email,
       phone: form.phone,
       address: form.address,
     });
-    const result = checkout(user.id, grandTotal, {
-      userName: form.name || user.name,
-      userEmail: form.email || user.email,
-      userPhone: form.phone,
-      userAddress: form.address,
-      paymentMethod,
-    });
-    if (result.success) {
-      toast({ title: "Pesanan dibuat", description: "Transaksi tercatat di dashboard admin." });
-      if (user.email) {
-        sendReceiptEmail(user.email, result?.orderId ?? "order");
-      }
-      sendReceiptEmail("muhammadafnanrisandi@gmail.com", result?.orderId ?? "order");
-      navigate("/products");
-    } else {
-      toast({ title: "Gagal checkout", description: result.message, variant: "destructive" });
-    }
-  };
 
-  const handleWhatsappOrder = () => {
-    if (!user) {
-      navigate("/login");
-      return;
-    }
     const itemsText = cartWithProduct
-      .map(
-        (item) =>
-          `- ${item.product.name} x ${item.quantity} = Rp ${(item.product.price * item.quantity).toLocaleString("id-ID")}`,
-      )
+      .map((item, idx) => {
+        const baseName = item.product.name;
+        const opt = item.selectedOption ? ` "${item.selectedOption}"` : "";
+        const lineHeader = `${String.fromCharCode(65 + idx)}. ${baseName}${opt}`;
+        const qtyPrice = `   Jumlah ${item.quantity} • Rp ${(item.product.price * item.quantity).toLocaleString(
+          "id-ID",
+        )}`;
+        const noteLine = item.note ? `   Catatan: ${item.note}` : null;
+        return [lineHeader, qtyPrice, noteLine].filter(Boolean).join("\n");
+      })
       .join("\n");
     const message = [
       "Halo ZonaPrint,",
-      "Saya ingin memesan:",
+      `Saya ingin memesan (${branch === "purwakarta" ? "Cabang Purwakarta" : "Cabang Wanayasa"}):`,
       itemsText,
       "",
       `Subtotal: Rp ${subtotal.toLocaleString("id-ID")}`,
       `Voucher: Rp ${voucherDiscount.toLocaleString("id-ID")}`,
-      `PPN 11%: Rp ${tax.toLocaleString("id-ID")}`,
       `Total: Rp ${grandTotal.toLocaleString("id-ID")}`,
       "",
       `Nama: ${form.name || user.name}`,
       `Email: ${form.email || user.email}`,
       `Telepon: ${form.phone || "-"}`,
       `Alamat: ${form.address || "-"}`,
+      "",
+      "Saya akan mengirimkan file desain (PNG, PDF, dan format lainnya) melalui chat ini.",
     ].join("\n");
-    const whatsappNumber = "6281234567890";
-    window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, "_blank");
+
+    const whatsappNumber = branch === "purwakarta" ? "628118894690" : "6282246907899";
+    const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
+
+    // Tambahkan sedikit jeda agar animasi terasa dan user sempat melihat efek "printing"
+    setTimeout(() => {
+      setSending("printing");
+      setTimeout(() => {
+        setSending("redirecting");
+        window.open(url, "_blank");
+        setTimeout(() => setSending("idle"), 1000);
+      }, 3000);
+    }, 300);
   };
 
   if (!cartWithProduct.length) {
@@ -186,8 +162,102 @@ const CheckoutPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 lg:px-8 py-12 grid gap-8 lg:grid-cols-[2fr_1fr]">
-      <Card>
+    <div className="container mx-auto px-4 lg:px-8 py-12 grid gap-8 lg:grid-cols-[2fr_1fr] relative">
+      {sending !== "idle" && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 30 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="relative w-[320px] md:w-[420px] bg-slate-950 text-slate-50 rounded-3xl shadow-2xl overflow-hidden border border-primary/40"
+          >
+            {/* Printer head */}
+            <div className="bg-gradient-to-r from-primary via-fuchsia-500 to-amber-400 px-6 py-4 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-slate-950/80 flex items-center justify-center shadow-inner">
+                <span className="w-5 h-1 rounded-full bg-amber-300 animate-pulse" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold tracking-wide">Sedang mencetak struk pesanan Anda...</p>
+                <p className="text-xs text-slate-100/80">
+                  Detail produk dan data pengiriman dirapikan sebelum dikirim ke WhatsApp.
+                </p>
+              </div>
+            </div>
+
+            {/* Paper coming out */}
+            <div className="px-6 py-4 bg-slate-900/90 flex justify-center">
+              <div className="relative w-full max-w-sm h-40 overflow-hidden flex items-start justify-center">
+                <motion.div
+                  key={sending}
+                  initial={{ y: "-100%" }}
+                  animate={{ y: 0 }}
+                  transition={{
+                    duration: 1.4,
+                    ease: "easeInOut",
+                  }}
+                  className="w-full bg-slate-50 text-slate-900 rounded-xl shadow-md px-4 py-3 text-xs font-mono"
+                >
+                  <div className="flex justify-between items-center border-b border-dashed border-slate-300 pb-1 mb-1.5">
+                    <span className="font-semibold">ZONAPRINT</span>
+                    <span className="text-[10px] text-slate-500">
+                      {branch === "purwakarta" ? "Purwakarta" : "Wanayasa"}
+                    </span>
+                  </div>
+                  <div className="space-y-0.5 max-h-16 overflow-hidden">
+                    {cartWithProduct.slice(0, 3).map((item) => (
+                      <div key={item.productId} className="flex justify-between gap-2">
+                        <span className="truncate">{item.product.name}</span>
+                        <span>
+                          x{item.quantity} • Rp{" "}
+                          {(item.product.price * item.quantity).toLocaleString("id-ID")}
+                        </span>
+                      </div>
+                    ))}
+                    {cartWithProduct.length > 3 && (
+                      <p className="text-slate-500 text-[10px]">
+                        +{cartWithProduct.length - 3} item lainnya...
+                      </p>
+                    )}
+                  </div>
+                  <div className="mt-1.5 pt-1.5 border-t border-dashed border-slate-300">
+                    <div className="flex justify-between text-[11px]">
+                      <span className="text-slate-600">Total</span>
+                      <span className="font-semibold">
+                        Rp {grandTotal.toLocaleString("id-ID")}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="mt-1 text-[10px] text-slate-500 text-center">
+                    File desain akan dikirim melalui chat WhatsApp setelah struk ini selesai.
+                  </p>
+                </motion.div>
+              </div>
+            </div>
+
+            {/* Progress line */}
+            <div className="px-6 pb-4 bg-slate-900/90">
+              <div className="mt-1.5 h-1.5 w-full bg-slate-800 overflow-hidden rounded-full">
+                <motion.div
+                  key={`${sending}-bar`}
+                  initial={{ x: "-100%" }}
+                  animate={{ x: "0%" }}
+                  transition={{
+                    duration: 1.6,
+                    ease: "easeInOut",
+                    repeat: sending === "printing" ? Infinity : 0,
+                  }}
+                  className="h-full w-full bg-gradient-to-r from-primary via-amber-400 to-primary"
+                />
+              </div>
+              <p className="mt-2 text-[11px] text-slate-400 text-center">
+                {sending === "printing"
+                  ? "Sedang menyiapkan detail pesanan ke WhatsApp..."
+                  : "Membuka WhatsApp. Jika belum muncul, cek jendela atau tab baru di browser Anda."}
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      )}
+      <Card className="bg-background/80 backdrop-blur-sm border border-slate-200 dark:border-slate-700">
         <CardHeader>
           <CardTitle>Data Pengiriman</CardTitle>
           <p className="text-sm text-muted-foreground">
@@ -211,47 +281,91 @@ const CheckoutPage = () => {
             <Label>Alamat lengkap</Label>
             <Input placeholder="Alamat lengkap" value={form.address} onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))} />
           </div>
-          <div className="grid gap-2">
-            <Label>Metode pembayaran</Label>
-            <RadioGroup value={paymentMethod} onValueChange={(val) => setPaymentMethod(val as PaymentMethod)} className="grid gap-2">
-              <div className="flex items-center space-x-2 rounded-md border p-3">
-                <RadioGroupItem value="qris" id="qris" />
-                <Label htmlFor="qris" className="flex-1">QRIS (all payment apps)</Label>
-              </div>
-              <div className="flex items-center space-x-2 rounded-md border p-3">
-                <RadioGroupItem value="bca" id="bca" />
-                <Label htmlFor="bca" className="flex-1">Transfer BCA</Label>
-              </div>
-              <div className="flex items-center space-x-2 rounded-md border p-3">
-                <RadioGroupItem value="mandiri" id="mandiri" />
-                <Label htmlFor="mandiri" className="flex-1">Transfer Mandiri</Label>
-              </div>
-              <div className="flex items-center space-x-2 rounded-md border p-3">
-                <RadioGroupItem value="bri" id="bri" />
-                <Label htmlFor="bri" className="flex-1">Transfer BRI</Label>
-              </div>
-            </RadioGroup>
+          {/* Pilih lokasi cabang untuk WhatsApp */}
+          <div className="grid gap-3 mt-2">
+            <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+              Pilih Lokasi Pemesanan (WhatsApp)
+            </Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <motion.button
+                type="button"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setBranch("purwakarta")}
+                className={`w-full rounded-2xl border px-4 py-3 flex items-center gap-3 text-left transition-all duration-200
+                  ${branch === "purwakarta"
+                    ? "border-primary bg-gradient-to-r from-primary to-primary-deep text-primary-foreground shadow-glow"
+                    : "border-slate-200/70 dark:border-slate-700 bg-background/80 hover:bg-primary/5"
+                  }`}
+              >
+                <div className="w-9 h-9 rounded-full bg-amber-400/90 flex items-center justify-center text-slate-900 text-xs font-bold shadow-md">
+                  PWK
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-semibold text-sm">Purwakarta</span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-200">+62 811-8894-690</span>
+                  <span className="text-[11px] text-slate-400 dark:text-slate-300">
+                    Dekat pusat kota, cocok untuk pesanan cepat.
+                  </span>
+                </div>
+              </motion.button>
+              <motion.button
+                type="button"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setBranch("wanayasa")}
+                className={`w-full rounded-2xl border px-4 py-3 flex items-center gap-3 text-left transition-all duration-200
+                  ${branch === "wanayasa"
+                    ? "border-amber-400 bg-gradient-to-r from-amber-300 to-amber-500 text-slate-900 shadow-glow"
+                    : "border-slate-200/70 dark:border-slate-700 bg-background/80 hover:bg-amber-50/10"
+                  }`}
+              >
+                <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold shadow-md">
+                  WNS
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-semibold text-sm">Wanayasa</span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-900">+62 822-4690-7899</span>
+                  <span className="text-[11px] text-slate-400 dark:text-slate-800">
+                    Lokasi strategis untuk area Wanayasa dan sekitarnya.
+                  </span>
+                </div>
+              </motion.button>
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              Semua pemesanan diselesaikan lewat WhatsApp sesuai cabang yang Anda pilih.
+            </p>
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-3">
-          <Button onClick={handleCheckout} className="w-full">Buat Pesanan</Button>
-          <Button variant="secondary" className="w-full" onClick={handleWhatsappOrder}>
-            Pesan via WhatsApp
+          <Button
+            variant="secondary"
+            className="w-full bg-primary text-primary-foreground hover:bg-primary/90 dark:bg-primary dark:text-white"
+            onClick={handleWhatsappOrder}
+          >
+            Pesan Sekarang!
           </Button>
         </CardFooter>
       </Card>
 
-      <Card>
+      <Card className="bg-background/80 backdrop-blur-sm border border-slate-200 dark:border-slate-700">
         <CardHeader>
           <CardTitle>Ringkasan Pembayaran</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {cartWithProduct.map((item) => (
-            <div key={item.productId} className="flex justify-between text-sm">
-              <span>
-                {item.product.name} x {item.quantity}
-              </span>
-              <span>Rp {(item.product.price * item.quantity).toLocaleString("id-ID")}</span>
+          {cartWithProduct.map((item, idx) => (
+            <div key={`${item.productId}-${idx}`} className="space-y-0.5 text-sm">
+              <div className="flex justify-between">
+                <span>
+                  {item.product.name}
+                  {item.selectedOption && <span className="text-xs text-muted-foreground"> ({item.selectedOption})</span>}
+                </span>
+                <span>Rp {(item.product.price * item.quantity).toLocaleString("id-ID")}</span>
+              </div>
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Jumlah: {item.quantity}</span>
+                {item.note && <span className="truncate max-w-[60%]">Catatan: {item.note}</span>}
+              </div>
             </div>
           ))}
           <div className="flex justify-between text-sm text-muted-foreground">
@@ -264,55 +378,29 @@ const CheckoutPage = () => {
               - Rp {voucherDiscount.toLocaleString("id-ID")}
             </span>
           </div>
-          <div className="flex justify-between text-sm text-muted-foreground">
-            <span>PPN 11%</span>
-            <span>Rp {tax.toLocaleString("id-ID")}</span>
-          </div>
           <div className="flex justify-between font-semibold text-lg">
             <span>Grand Total</span>
             <span>Rp {grandTotal.toLocaleString("id-ID")}</span>
           </div>
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
+            Harga di atas merupakan estimasi. Nominal akhir dapat berubah menyesuaikan jenis produk, ukuran,
+            finishing, dan tingkat kesulitan setelah dikonfirmasi bersama admin melalui WhatsApp.
+          </p>
           <div className="grid gap-2">
             <Label htmlFor="voucher">Masukkan kode voucher</Label>
             <div className="flex gap-2">
               <Input id="voucher" value={voucherCode} onChange={(e) => setVoucherCode(e.target.value)} placeholder="Masukkan kode" />
-              <Button type="button" onClick={handleApplyVoucher}>Pakai</Button>
+              <Button
+                type="button"
+                className="bg-amber-400 text-slate-900 hover:bg-amber-300"
+                onClick={handleApplyVoucher}
+              >
+                Pakai
+              </Button>
             </div>
           </div>
         </CardContent>
       </Card>
-
-      {user && (
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Status Pesanan Anda</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {orders.filter((o) => o.userId === user.id).map((order) => {
-              const progressMap: Record<string, number> = {
-                baru: 20,
-                diproses: 40,
-                produksi: 60,
-                dikirim: 85,
-                selesai: 100,
-              };
-              const pct = progressMap[order.status] ?? 20;
-              return (
-                <div key={order.id} className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Order {order.id}</span>
-                    <span className="text-muted-foreground capitalize">{order.status}</span>
-                  </div>
-                  <Progress value={pct} />
-                </div>
-              );
-            })}
-            {!orders.filter((o) => o.userId === user.id).length && (
-              <p className="text-sm text-muted-foreground">Belum ada pesanan. Checkout untuk melihat progres.</p>
-            )}
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 };

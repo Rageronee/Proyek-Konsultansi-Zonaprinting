@@ -19,12 +19,14 @@ type ShopContextValue = {
   addProduct: (payload: Omit<Product, "id">) => void;
   updateProduct: (id: string, payload: Partial<Omit<Product, "id">>) => void;
   deleteProduct: (id: string) => void;
-  addToCart: (productId: string, quantity?: number) => void;
+  addToCart: (productId: string, quantity?: number, meta?: { option?: string; note?: string }) => void;
   updateCartItem: (productId: string, quantity: number) => void;
   removeFromCart: (productId: string) => void;
   clearCart: () => void;
   attachFile: (productId: string, attachment: UploadAttachment) => void;
   removeAttachment: (productId: string, attachmentId: string) => void;
+  addManualOrder: (payload: { key: string; customer: string; total: number; note?: string }) => { success: boolean; message: string };
+  deleteOrder: (orderId: string) => void;
   checkout: (
     userId: string,
     totalOverride: number,
@@ -50,21 +52,26 @@ const SHOP_FALLBACK: ShopState = {
 const ShopContext = createContext<ShopContextValue | undefined>(undefined);
 
 const createId = (prefix: string) => `${prefix}-${crypto.randomUUID()}`;
+const MANUAL_ORDER_KEY = "ZP-ADMIN-2025";
 
 const calcTotal = (items: OrderItem[]) => items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-const normalizeState = (raw: ShopState): ShopState => ({
-  ...raw,
-  cart: raw.cart.map((c) => ({ ...c, attachments: c.attachments ?? [] })),
-  orders: raw.orders.map((o) => ({
-    ...o,
-    status: (o.status ?? "baru") as OrderStatus,
-    paymentMethod: o.paymentMethod ?? "qris",
-    attachments: o.attachments ?? [],
-    userName: o.userName ?? o.userId,
-    userEmail: o.userEmail ?? "",
-  })),
-});
+const normalizeState = (raw: ShopState): ShopState => {
+  const products = raw.products.length >= seedProducts.length ? raw.products : seedProducts;
+  return {
+    ...raw,
+    products,
+    cart: raw.cart.map((c) => ({ ...c, attachments: c.attachments ?? [] })),
+    orders: raw.orders.map((o) => ({
+      ...o,
+      status: (o.status ?? "baru") as OrderStatus,
+      paymentMethod: o.paymentMethod ?? "qris",
+      attachments: o.attachments ?? [],
+      userName: o.userName ?? o.userId,
+      userEmail: o.userEmail ?? "",
+    })),
+  };
+};
 
 export const ShopProvider = ({ children }: { children: React.ReactNode }) => {
   const [state, setState] = useState<ShopState>(() => normalizeState(loadShopState<ShopState>(SHOP_FALLBACK)));
@@ -93,18 +100,33 @@ export const ShopProvider = ({ children }: { children: React.ReactNode }) => {
     }));
   };
 
-  const addToCart: ShopContextValue["addToCart"] = (productId, quantity = 1) => {
+  const addToCart: ShopContextValue["addToCart"] = (productId, quantity = 1, meta) => {
     setState((prev) => {
-      const existing = prev.cart.find((c) => c.productId === productId);
+      const existing = prev.cart.find(
+        (c) =>
+          c.productId === productId &&
+          c.selectedOption === (meta?.option ?? c.selectedOption) &&
+          c.note === (meta?.note ?? c.note),
+      );
+
       if (existing) {
         return {
           ...prev,
           cart: prev.cart.map((c) =>
-            c.productId === productId ? { ...c, quantity: c.quantity + quantity } : c,
+            c === existing ? { ...c, quantity: c.quantity + quantity } : c,
           ),
         };
       }
-      return { ...prev, cart: [...prev.cart, { productId, quantity, attachments: [] }] };
+
+      const newItem: CartItem = {
+        productId,
+        quantity,
+        attachments: [],
+        selectedOption: meta?.option,
+        note: meta?.note,
+      };
+
+      return { ...prev, cart: [...prev.cart, newItem] };
     });
   };
 
@@ -180,6 +202,50 @@ export const ShopProvider = ({ children }: { children: React.ReactNode }) => {
     return { success: true, orderId: newOrder.id };
   };
 
+  const addManualOrder: ShopContextValue["addManualOrder"] = ({ key, customer, total, note }) => {
+    if (key !== MANUAL_ORDER_KEY) {
+      return { success: false, message: "Kunci admin tidak valid." };
+    }
+
+    const items: OrderItem[] = [
+      {
+        productId: "manual-offline",
+        name: note && note.trim().length ? `Offline • ${note}` : "Offline / Walk-in",
+        price: total,
+        quantity: 1,
+      },
+    ];
+
+    const newOrder: Order = {
+      id: createId("ord"),
+      userId: "offline",
+      userName: customer || "Offline Customer",
+      userEmail: "offline@zonaprint.com",
+      userPhone: "-",
+      userAddress: "-",
+      items,
+      attachments: [],
+      total,
+      status: "baru",
+      paymentMethod: "manual",
+      createdAt: new Date().toISOString(),
+    };
+
+    setState((prev) => ({
+      ...prev,
+      orders: [newOrder, ...prev.orders],
+    }));
+
+    return { success: true, message: "Pesanan offline berhasil ditambahkan." };
+  };
+
+  const deleteOrder: ShopContextValue["deleteOrder"] = (orderId) => {
+    setState((prev) => ({
+      ...prev,
+      orders: prev.orders.filter((order) => order.id !== orderId),
+    }));
+  };
+
   const updateOrderStatus: ShopContextValue["updateOrderStatus"] = (orderId, status) => {
     setState((prev) => ({
       ...prev,
@@ -227,6 +293,8 @@ export const ShopProvider = ({ children }: { children: React.ReactNode }) => {
       clearCart,
       attachFile,
       removeAttachment,
+      addManualOrder,
+      deleteOrder,
       checkout,
       updateOrderStatus,
       getProductPerformance,

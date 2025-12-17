@@ -6,7 +6,7 @@ import { useShop } from "@/providers/ShopProvider";
 import { useAuth } from "@/providers/AuthProvider";
 
 const CartPage = () => {
-  const { cart, products, updateCartItem, removeFromCart, getCartTotal, attachFile, removeAttachment } = useShop();
+  const { cart, products, updateCartItem, removeFromCart, getCartTotal } = useShop();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
@@ -53,35 +53,13 @@ const CartPage = () => {
                   <div className="flex-1">
                     <p className="font-semibold">{item.product.name}</p>
                     <p className="text-sm text-muted-foreground line-clamp-2">{item.product.description}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">Harga: Rp {item.product.price.toLocaleString("id-ID")}</p>
-                    <div className="mt-3 space-y-2">
-                      <Input
-                        type="file"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-                          attachFile(item.productId, {
-                            id: crypto.randomUUID(),
-                            name: file.name,
-                            url: URL.createObjectURL(file),
-                          });
-                          e.target.value = "";
-                        }}
-                      />
-                      <div className="space-y-1">
-                        {(item.attachments ?? []).map((att) => (
-                          <div key={att.id} className="flex items-center justify-between text-xs text-muted-foreground">
-                            <a href={att.url} target="_blank" rel="noreferrer" className="underline">
-                              {att.name}
-                            </a>
-                            <Button variant="ghost" size="sm" onClick={() => removeAttachment(item.productId, att.id)}>
-                              Hapus
-                            </Button>
-                          </div>
-                        ))}
-                        {!item.attachments?.length && <p className="text-xs text-muted-foreground">Belum ada file terunggah.</p>}
-                      </div>
-                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Harga: Rp {item.product.price.toLocaleString("id-ID")}
+                    </p>
+                    <p className="mt-3 text-xs text-muted-foreground">
+                      * Kirimkan dokumen/desain berkualitas tinggi (PNG, PDF, AI, PSD, dan format lainnya) langsung
+                      melalui WhatsApp setelah checkout agar hasil cetak tetap tajam.
+                    </p>
                   </div>
                   <div className="flex flex-col items-end gap-2">
                     <Input
@@ -109,13 +87,9 @@ const CartPage = () => {
                 <span>Subtotal</span>
                 <span>Rp {total.toLocaleString("id-ID")}</span>
               </div>
-              <div className="flex justify-between text-sm text-muted-foreground">
-                <span>PPN 11%</span>
-                <span>Rp {(total * 0.11).toLocaleString("id-ID")}</span>
-              </div>
               <div className="flex justify-between font-semibold text-lg">
-                <span>Grand Total</span>
-                <span>Rp {(total * 1.11).toLocaleString("id-ID")}</span>
+                <span>Total</span>
+                <span>Rp {total.toLocaleString("id-ID")}</span>
               </div>
             </CardContent>
             <CardFooter>

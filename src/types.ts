@@ -30,12 +30,15 @@ export type Product = {
   category: string;
   image: string;
   featured?: boolean;
+  options?: string[];
 };
 
 export type CartItem = {
   productId: string;
   quantity: number;
   attachments?: UploadAttachment[];
+  selectedOption?: string;
+  note?: string;
 };
 
 export type OrderItem = {

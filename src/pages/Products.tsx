@@ -1,14 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useShop } from "@/providers/ShopProvider";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/components/ui/use-toast";
 
 const ProductsPage = () => {
-  const { products, addToCart } = useShop();
+  const { products } = useShop();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("all");
   const [loading, setLoading] = useState(false);
@@ -21,12 +24,12 @@ const ProductsPage = () => {
 
   const badgeTone = (cat: string) => {
     const map: Record<string, string> = {
-      "Digital Printing": "bg-primary/10 text-primary",
-      Merchandise: "bg-amber-100 text-amber-700",
-      Sticker: "bg-emerald-100 text-emerald-700",
-      "Document & Books": "bg-blue-100 text-blue-700",
-      Packaging: "bg-purple-100 text-purple-700",
-      Display: "bg-slate-100 text-slate-700",
+      "Digital Printing": "bg-primary/10 text-primary dark:bg-primary/30 dark:text-primary-50",
+      Merchandise: "bg-amber-100 text-amber-700 dark:bg-amber-400/20 dark:text-amber-300",
+      Sticker: "bg-emerald-100 text-emerald-700 dark:bg-emerald-400/20 dark:text-emerald-300",
+      "Document & Books": "bg-blue-100 text-blue-700 dark:bg-blue-400/20 dark:text-blue-200",
+      Packaging: "bg-purple-100 text-purple-700 dark:bg-purple-400/20 dark:text-purple-200",
+      Display: "bg-slate-100 text-slate-700 dark:bg-slate-700/60 dark:text-slate-100",
     };
     return map[cat] ?? "bg-slate-100 text-slate-700";
   };
@@ -58,7 +61,7 @@ const ProductsPage = () => {
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="border rounded-md px-3 py-2 text-sm"
+            className="border rounded-md px-3 py-2 text-sm bg-background text-foreground dark:bg-slate-900 dark:text-slate-100 dark:border-slate-700"
           >
             {categories.map((cat) => (
               <option key={cat} value={cat}>
@@ -102,12 +105,25 @@ const ProductsPage = () => {
                 </div>
                 <p className="text-xs text-muted-foreground">Stok: {product.stock}</p>
               </CardContent>
-              <CardFooter className="flex gap-2">
-                <Button variant="outline" className="w-1/2" asChild>
+              <CardFooter className="flex gap-2 mt-1">
+                <Button
+                  variant="outline"
+                  className="w-1/2 text-xs md:text-sm"
+                  asChild
+                >
                   <Link to={`/products/${product.id}`}>Detail</Link>
                 </Button>
-                <Button className="w-1/2" onClick={() => addToCart(product.id)}>
-                  Tambah ke Keranjang
+                <Button
+                  className="w-1/2 text-xs md:text-sm whitespace-nowrap"
+                  onClick={() => {
+                    navigate(`/products/${product.id}`);
+                    toast({
+                      title: "Pilih detail produk",
+                      description: `Silakan tentukan ukuran, gramasi, dan catatan sebelum menambahkan ${product.name} ke keranjang.`,
+                    });
+                  }}
+                >
+                  Pilih & Tambah
                 </Button>
               </CardFooter>
             </Card>
