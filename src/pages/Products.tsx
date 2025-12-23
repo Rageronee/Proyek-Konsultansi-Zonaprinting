@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,8 +12,9 @@ const ProductsPage = () => {
   const { products } = useShop();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("all");
+  const [category, setCategory] = useState(searchParams.get("category") || "all");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -60,7 +61,16 @@ const ProductsPage = () => {
           />
           <select
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
+            onChange={(e) => {
+              const newCategory = e.target.value;
+              setCategory(newCategory);
+              if (newCategory === "all") {
+                searchParams.delete("category");
+                setSearchParams(searchParams);
+              } else {
+                setSearchParams({ category: newCategory });
+              }
+            }}
             className="border rounded-md px-3 py-2 text-sm bg-background text-foreground dark:bg-slate-900 dark:text-slate-100 dark:border-slate-700"
           >
             {categories.map((cat) => (

@@ -26,23 +26,36 @@ const AdminProductsPage = () => {
   const { products, addProduct, updateProduct, deleteProduct } = useShop();
   const [draft, setDraft] = useState<Draft>(emptyDraft);
   const [editingId, setEditingId] = useState<string | null>(null);
+  // Local state for options input to separate raw text from array logic
+  const [optionsInput, setOptionsInput] = useState("");
 
   const categories = useMemo(() => [...new Set(products.map((p) => p.category))], [products]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Parse options from the input string
+    const finalOptions = optionsInput
+      .split(",")
+      .map((opt) => opt.trim())
+      .filter((opt) => opt.length > 0);
+
+    const finalDraft = { ...draft, options: finalOptions };
+
     if (editingId) {
-      updateProduct(editingId, draft);
+      updateProduct(editingId, finalDraft);
     } else {
-      addProduct(draft);
+      addProduct(finalDraft);
     }
     setDraft(emptyDraft);
+    setOptionsInput("");
     setEditingId(null);
   };
 
   const startEdit = (product: Product) => {
     const { id, ...rest } = product;
     setDraft(rest);
+    setOptionsInput(rest.options?.join(", ") ?? "");
     setEditingId(id);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -123,16 +136,8 @@ const AdminProductsPage = () => {
               <Input
                 id="options"
                 placeholder='Contoh: A5 150gsm, A4 150gsm, B5 120gsm'
-                value={draft.options?.join(", ") ?? ""}
-                onChange={(e) =>
-                  setDraft((d) => ({
-                    ...d,
-                    options: e.target.value
-                      .split(",")
-                      .map((opt) => opt.trim())
-                      .filter(Boolean),
-                  }))
-                }
+                value={optionsInput}
+                onChange={(e) => setOptionsInput(e.target.value)}
               />
               <p className="text-xs text-muted-foreground">
                 Isi dengan koma untuk memisahkan pilihan. Opsi ini akan muncul sebagai tombol pilihan di halaman detail produk.

@@ -116,29 +116,53 @@ const AdminOrdersPage = () => {
             data transaksi hanya dapat dibaca (read-only).
           </p>
           <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-            <Input
-              className="sm:max-w-xs"
-              placeholder="Masukkan kunci admin untuk edit/hapus"
-              type="password"
-              value={editKey}
-              onChange={(e) => setEditKey(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  if (!editKey) {
-                    (e.target as HTMLInputElement).blur();
-                  } else {
-                    // Beri feedback kecil bahwa kunci sudah tersimpan di state
-                    // (aksi nyata dilakukan saat klik ubah status / hapus)
-                    (e.target as HTMLInputElement).blur();
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Input
+                className="flex-1 sm:max-w-xs"
+                placeholder="Masukkan kunci admin untuk edit/hapus"
+                type="password"
+                value={editKey}
+                onChange={(e) => setEditKey(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (editKey === ADMIN_KEY) {
+                      toast({
+                        title: "Akses Diberikan",
+                        description: "Kunci benar. Anda dapat memodifikasi transaksi sekarang.",
+                        className: "bg-green-600 text-white"
+                      });
+                    } else {
+                      toast({
+                        title: "Akses Ditolak",
+                        description: "Kunci admin salah. Silakan coba lagi.",
+                        variant: "destructive",
+                      });
+                    }
+                  }
+                }}
+              />
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  if (editKey === ADMIN_KEY) {
                     toast({
-                      title: "Kunci disimpan",
-                      description: "Anda sekarang dapat mengubah status atau menghapus pesanan.",
+                      title: "Akses Diberikan",
+                      description: "Kunci benar. Anda dapat memodifikasi transaksi sekarang.",
+                      className: "bg-green-600 text-white"
+                    });
+                  } else {
+                    toast({
+                      title: "Akses Ditolak",
+                      description: "Kunci admin salah. Silakan coba lagi.",
+                      variant: "destructive",
                     });
                   }
-                }
-              }}
-            />
+                }}
+              >
+                Enter
+              </Button>
+            </div>
             <span className="text-[11px] text-muted-foreground">
               Kunci ini akan dicek setiap kali Anda mengubah status atau menghapus pesanan.
             </span>
@@ -159,7 +183,6 @@ const AdminOrdersPage = () => {
                 <th className="py-2 pr-4">Produk</th>
                 <th className="py-2 pr-4">Lampiran</th>
                 <th className="py-2 pr-4">Total</th>
-                <th className="py-2 pr-4">Pembayaran</th>
                 <th className="py-2 pr-4">Status</th>
                 <th className="py-2 pr-4">Tanggal</th>
                 <th className="py-2 pr-4">Notifikasi</th>
@@ -191,7 +214,6 @@ const AdminOrdersPage = () => {
                       : "Tidak ada"}
                   </td>
                   <td className="py-3 pr-4 font-semibold">Rp {order.total.toLocaleString("id-ID")}</td>
-                  <td className="py-3 pr-4 capitalize text-xs text-muted-foreground">{order.paymentMethod}</td>
                   <td className="py-3 pr-4">
                     <div className="flex items-center gap-2">
                       <Badge className={statusColors[order.status]}>{order.status}</Badge>
@@ -227,21 +249,36 @@ const AdminOrdersPage = () => {
                     {new Date(order.createdAt).toLocaleString("id-ID")}
                   </td>
                   <td className="py-3 pr-4">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        const subject = encodeURIComponent(`Verifikasi Pesanan ${order.id}`);
-                        const body = encodeURIComponent(
-                          `Halo Admin,\nPesanan ${order.id} atas nama ${order.userName} siap diverifikasi.\nTotal: Rp ${order.total.toLocaleString(
-                            "id-ID",
-                          )}\nStatus: ${order.status}\nPembayaran: ${order.paymentMethod}`,
-                        );
-                        window.open(`mailto:admin@zonaprinting.com?subject=${subject}&body=${body}`, "_blank");
-                      }}
-                    >
-                      Email Admin
-                    </Button>
+                    {order.status === "baru" ? (
+                      <Button
+                        variant="default"
+                        size="sm"
+                        className="mr-2 bg-blue-600 hover:bg-blue-700 text-white"
+                        onClick={() => {
+                          if (editKey !== ADMIN_KEY) {
+                            toast({
+                              title: "Kunci admin salah",
+                              description: "Masukkan kunci admin untuk memverifikasi pesanan.",
+                              variant: "destructive",
+                            });
+                            return;
+                          }
+                          updateOrderStatus(order.id, "diproses");
+                          toast({ title: "Pesanan diverifikasi", description: `Pesanan ${order.id} telah diverifikasi dan diproses.` });
+                        }}
+                      >
+                        Verifikasi
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="mr-2"
+                        disabled
+                      >
+                        Terverifikasi
+                      </Button>
+                    )}
                   </td>
                   <td className="py-3 pr-4">
                     <Button

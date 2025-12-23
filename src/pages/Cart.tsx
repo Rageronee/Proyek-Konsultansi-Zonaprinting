@@ -1,7 +1,10 @@
 import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { useShop } from "@/providers/ShopProvider";
 import { useAuth } from "@/providers/AuthProvider";
 
@@ -9,6 +12,7 @@ const CartPage = () => {
   const { cart, products, updateCartItem, removeFromCart, getCartTotal } = useShop();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
 
   const cartWithProduct = cart
     .map((item) => {
@@ -16,7 +20,7 @@ const CartPage = () => {
       if (!product) return null;
       return { ...item, product };
     })
-    .filter(Boolean) as Array<{ productId: string; quantity: number; product: (typeof products)[number]; attachments?: { id: string; name: string; url: string }[] }>;
+    .filter(Boolean) as Array<{ productId: string; quantity: number; product: (typeof products)[number]; attachments?: { id: string; name: string; url: string }[]; note?: string; selectedOption?: string }>;
 
   const total = getCartTotal();
 
@@ -60,6 +64,23 @@ const CartPage = () => {
                       * Kirimkan dokumen/desain berkualitas tinggi (PNG, PDF, AI, PSD, dan format lainnya) langsung
                       melalui WhatsApp setelah checkout agar hasil cetak tetap tajam.
                     </p>
+                    <div className="mt-4">
+                      <Label htmlFor={`note-${item.productId}`} className="text-xs text-muted-foreground">Catatan Pesanan</Label>
+                      <Textarea
+                        id={`note-${item.productId}`}
+                        placeholder="Contoh: Nama di kartu 'Budi Santoso', Warna background biru muda"
+                        value={item.note || ""}
+                        className={`mt-1.5 min-h-[80px] text-sm resize-none ${!item.note?.trim() ? "border-red-500 focus-visible:ring-red-500" : ""}`}
+                        onChange={(e) => {
+                          updateCartItem(item.productId, item.quantity, e.target.value);
+                          if (error) setError(null);
+                        }}
+                      />
+                      {!item.note?.trim() && (
+                        <span className="text-[10px] text-red-500">* Wajib diisi</span>
+                      )}
+                    </div>
+
                   </div>
                   <div className="flex flex-col items-end gap-2">
                     <Input
@@ -92,8 +113,19 @@ const CartPage = () => {
                 <span>Rp {total.toLocaleString("id-ID")}</span>
               </div>
             </CardContent>
-            <CardFooter>
-              <Button className="w-full" onClick={() => navigate(isAuthenticated ? "/checkout" : "/login")}>
+            <CardFooter className="flex flex-col gap-2">
+              {error && <p className="text-sm text-red-500 text-center">{error}</p>}
+              <Button
+                className="w-full"
+                onClick={() => {
+                  const hasEmptyNote = cartWithProduct.some(item => !item.note || !item.note.trim());
+                  if (hasEmptyNote) {
+                    setError("Mohon lengkapi catatan untuk semua produk di keranjang.");
+                    return;
+                  }
+                  navigate(isAuthenticated ? "/checkout" : "/login");
+                }}
+              >
                 Lanjutkan ke Checkout
               </Button>
             </CardFooter>

@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Menu, Moon, ShoppingCart, Sun, Upload, UserCircle, X } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Menu, Moon, ShoppingCart, Sun, Upload, UserCircle, X, RefreshCw, Bell } from "lucide-react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import logo from "@/assets/logo-zonaprint.png";
+import logo from "@/assets/main_logo.svg";
 import { useAuth } from "@/providers/AuthProvider";
 import { useShop } from "@/providers/ShopProvider";
 
@@ -16,10 +17,11 @@ const Navbar = () => {
     (localStorage.getItem("zp-theme") as "light" | "dark") || "light",
   );
   const { user, isAdmin, isAuthenticated, logout } = useAuth();
-  const { cart, clearCart } = useShop();
+  const { cart, clearCart, refresh, isLoading, orders } = useShop();
   const navigate = useNavigate();
 
   const cartCount = useMemo(() => cart.reduce((sum, item) => sum + item.quantity, 0), [cart]);
+  const newOrderCount = useMemo(() => (orders || []).filter((o) => o.status === "baru").length, [orders]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -53,9 +55,8 @@ const Navbar = () => {
     <motion.nav
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? "glass shadow-lg" : "bg-background/80 dark:bg-slate-950/80"
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? "glass shadow-lg" : "bg-background/80 dark:bg-slate-950/80"
+        }`}
     >
       <div className="container mx-auto px-4 lg:px-8">
         <div className="flex items-center justify-between h-20">
@@ -83,8 +84,7 @@ const Navbar = () => {
                 <NavLink
                   to={item.to}
                   className={({ isActive }) =>
-                    `text-foreground hover:text-primary transition-colors duration-300 font-medium ${
-                      isActive ? "text-primary" : ""
+                    `text-foreground hover:text-primary transition-colors duration-300 font-medium ${isActive ? "text-primary" : ""
                     }`
                   }
                 >
@@ -105,7 +105,81 @@ const Navbar = () => {
           </div>
 
           {/* CTA Button - Desktop */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2">
+            {isAdmin && (
+              <>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full hover:bg-slate-100 dark:hover:bg-slate-800"
+                  onClick={refresh}
+                  disabled={isLoading}
+                >
+                  <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+                </Button>
+
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="ghost" size="icon" className="relative rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
+                      <Bell className="h-4 w-4" />
+                      {newOrderCount > 0 && (
+                        <span className="absolute top-1 right-1 flex h-2 w-2 items-center justify-center">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                        </span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80 p-0" align="end">
+                    <div className="flex items-center justify-between px-4 py-3 border-b">
+                      <h4 className="font-semibold text-sm">Pesanan Baru</h4>
+                      <span className="text-xs text-muted-foreground">{newOrderCount} pesanan</span>
+                    </div>
+                    <div className="py-2 max-h-[300px] overflow-y-auto">
+                      {newOrderCount === 0 ? (
+                        <div className="px-4 py-3 text-center text-sm text-muted-foreground">
+                          Tidak ada pesanan baru.
+                        </div>
+                      ) : (
+                        (orders || [])
+                          .filter((o) => o.status === "baru")
+                          .slice(0, 5)
+                          .map((order) => (
+                            <div
+                              key={order.id}
+                              className="px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b last:border-0"
+                            >
+                              <div className="flex justify-between items-start mb-1">
+                                <span className="font-medium text-sm">
+                                  {order.userName || "User"}
+                                </span>
+                                <span className="text-[10px] text-muted-foreground">
+                                  {new Date(order.createdAt).toLocaleTimeString("id-ID", { hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                              </div>
+                              <p className="text-xs text-muted-foreground truncate">
+                                {order.items.map((i) => i.name).join(", ")}
+                              </p>
+                              <div className="mt-1">
+                                <span className="text-[10px] font-medium text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+                                  Rp {order.total.toLocaleString("id-ID")}
+                                </span>
+                              </div>
+                            </div>
+                          ))
+                      )}
+                    </div>
+                    {newOrderCount > 0 && (
+                      <div className="p-2 border-t bg-slate-50/50 dark:bg-slate-900/50">
+                        <NavLink to="/admin" className="block text-center text-xs font-medium text-primary hover:underline">
+                          Lihat Dashboard
+                        </NavLink>
+                      </div>
+                    )}
+                  </PopoverContent>
+                </Popover>
+              </>
+            )}
             <Button
               variant="ghost"
               size="icon"
@@ -121,13 +195,13 @@ const Navbar = () => {
             </Button>
             {!isAdmin && (
               <Button variant="ghost" className="relative" onClick={() => navigate("/cart")}>
-              <ShoppingCart className="h-5 w-5" />
-              {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 rounded-full bg-primary text-white text-xs px-1.5 py-0.5">
-                  {cartCount}
-                </span>
-              )}
-            </Button>
+                <ShoppingCart className="h-5 w-5" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 rounded-full bg-primary text-white text-xs px-1.5 py-0.5">
+                    {cartCount}
+                  </span>
+                )}
+              </Button>
             )}
             {isAuthenticated && !isAdmin && (
               <Button variant="outline" onClick={() => navigate("/profile")} className="flex items-center gap-2">
@@ -147,16 +221,16 @@ const Navbar = () => {
               </div>
             ) : (
               <>
-            <Button variant="ghost" onClick={() => navigate("/login")}>
-              Login
-            </Button>
-            <Button
-              className="gradient-primary text-primary-foreground shadow-glow hover:shadow-elegant transition-all duration-300 hover:scale-105"
-              onClick={() => navigate("/products")}
-            >
-              <Upload className="mr-2 h-4 w-4" />
-              Mulai Cetak
-            </Button>
+                <Button variant="ghost" onClick={() => navigate("/login")}>
+                  Login
+                </Button>
+                <Button
+                  className="gradient-primary text-primary-foreground shadow-glow hover:shadow-elegant transition-all duration-300 hover:scale-105"
+                  onClick={() => navigate("/products")}
+                >
+                  <Upload className="mr-2 h-4 w-4" />
+                  Mulai Cetak
+                </Button>
               </>
             )}
           </div>
@@ -216,10 +290,10 @@ const Navbar = () => {
                 </NavLink>
               )}
               {!isAdmin && (
-              <Button variant="outline" className="flex items-center gap-2" onClick={() => navigate("/cart")}>
-                <ShoppingCart className="h-4 w-4" />
-                Keranjang {cartCount > 0 && <span className="ml-1">({cartCount})</span>}
-              </Button>
+                <Button variant="outline" className="flex items-center gap-2" onClick={() => navigate("/cart")}>
+                  <ShoppingCart className="h-4 w-4" />
+                  Keranjang {cartCount > 0 && <span className="ml-1">({cartCount})</span>}
+                </Button>
               )}
               <Button
                 variant="ghost"
@@ -264,7 +338,7 @@ const Navbar = () => {
       {showLogoutConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="rounded-2xl bg-slate-900 text-white px-6 py-5 shadow-2xl max-w-sm w-full mx-4">
-              <p className="font-semibold mb-2 text-amber-300">Konfirmasi Logout</p>
+            <p className="font-semibold mb-2 text-amber-300">Konfirmasi Logout</p>
             <p className="text-sm text-slate-200 mb-4">
               Apakah Anda yakin ingin keluar dari akun ini?
             </p>

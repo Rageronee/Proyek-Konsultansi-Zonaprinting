@@ -84,5 +84,5 @@ export type UploadAttachment = {
   url: string;
 };
 
-export type PaymentMethod = "qris" | "bca" | "mandiri" | "bri";
+export type PaymentMethod = "qris" | "bca" | "mandiri" | "bri" | "manual";
 

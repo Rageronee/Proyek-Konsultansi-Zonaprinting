@@ -12,10 +12,15 @@ const FeaturedProducts = () => {
     .sort((a, b) => b.totalSold - a.totalSold)
     .map((p) => p.productId);
 
-  const resolved = (popularIds.length ? popularIds : products.map((p) => p.id)).slice(0, 4);
-  const popularProducts = resolved
+  let popularProducts = popularIds
     .map((id) => products.find((p) => p.id === id))
-    .filter(Boolean);
+    .filter((p): p is (typeof products)[number] => !!p);
+
+  if (popularProducts.length === 0) {
+    popularProducts = products.slice(0, 4);
+  } else {
+    popularProducts = popularProducts.slice(0, 4);
+  }
 
   return (
     <section className="py-24 bg-muted/30">

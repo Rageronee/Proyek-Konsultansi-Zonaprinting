@@ -27,7 +27,7 @@ const ProductCategories = () => {
       slug: "sticker-label",
     },
     {
-      name: "Document & Books",
+      name: "Document Books",
       description: "Brosur, Katalog, Majalah",
       icon: Book,
       gradient: "from-blue-500 to-cyan-500",
@@ -74,60 +74,60 @@ const ProductCategories = () => {
                 transition={{ delay: index * 0.1, duration: 0.6, ease: "easeOut" }}
                 className="h-full"
               >
-                <Link to={`/category/${category.slug}`} className="block h-full">
-                <Card className="group relative h-full border-2 hover:border-primary/50 transition-all duration-500 cursor-pointer shadow-card hover:shadow-elegant">
-                  {/* Background Gradient */}
-                  <div
-                    className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-500`}
-                  />
+                <Link to={`/products?category=${encodeURIComponent(category.name)}`} className="block h-full">
+                  <Card className="group relative h-full border-2 hover:border-primary/50 transition-all duration-500 cursor-pointer shadow-card hover:shadow-elegant">
+                    {/* Background Gradient */}
+                    <div
+                      className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${category.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-500`}
+                    />
 
-                  {/* Content */}
-                  <div className="relative h-full p-6 flex flex-col gap-4 justify-between">
-                    {/* Icon */}
-                    <div>
+                    {/* Content */}
+                    <div className="relative h-full p-6 flex flex-col gap-4 justify-between">
+                      {/* Icon */}
+                      <div>
+                        <motion.div
+                          whileHover={{ scale: 1.1, rotate: 5 }}
+                          transition={{ type: "spring", stiffness: 300 }}
+                          className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${category.gradient} flex items-center justify-center text-white shadow-lg`}
+                        >
+                          <Icon className="w-7 h-7" />
+                        </motion.div>
+                      </div>
+
+                      {/* Text */}
+                      <div className="space-y-1">
+                        <h3 className="text-xl font-bold group-hover:text-primary transition-colors">
+                          {category.name}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {category.description}
+                        </p>
+                      </div>
+
+                      {/* Hover Arrow */}
                       <motion.div
-                        whileHover={{ scale: 1.1, rotate: 5 }}
-                        transition={{ type: "spring", stiffness: 300 }}
-                        className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${category.gradient} flex items-center justify-center text-white shadow-lg`}
+                        initial={{ x: -10, opacity: 0 }}
+                        whileHover={{ x: 0, opacity: 1 }}
+                        className="ml-auto text-primary"
                       >
-                        <Icon className="w-7 h-7" />
+                        <svg
+                          className="w-6 h-6"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M17 8l4 4m0 0l-4 4m4-4H3"
+                          />
+                        </svg>
                       </motion.div>
                     </div>
 
-                    {/* Text */}
-                    <div className="space-y-1">
-                      <h3 className="text-xl font-bold group-hover:text-primary transition-colors">
-                        {category.name}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {category.description}
-                      </p>
-                    </div>
-
-                    {/* Hover Arrow */}
-                    <motion.div
-                      initial={{ x: -10, opacity: 0 }}
-                      whileHover={{ x: 0, opacity: 1 }}
-                      className="ml-auto text-primary"
-                    >
-                      <svg
-                        className="w-6 h-6"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M17 8l4 4m0 0l-4 4m4-4H3"
-                        />
-                      </svg>
-                    </motion.div>
-                  </div>
-
-                  {/* Shine Effect removed per request */}
-                </Card>
+                    {/* Shine Effect removed per request */}
+                  </Card>
                 </Link>
               </motion.div>
             );

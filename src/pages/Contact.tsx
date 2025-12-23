@@ -39,7 +39,7 @@ const ContactPage = () => {
             </div>
             <div className="flex items-center gap-3">
               <Mail className="h-4 w-4 text-primary" />
-              <span>sales@zonaprint.com</span>
+              <span>zonaprintwanayasa@gmail.com</span>
             </div>
             <div className="flex items-start gap-3">
               <MapPin className="h-4 w-4 text-primary mt-1" />

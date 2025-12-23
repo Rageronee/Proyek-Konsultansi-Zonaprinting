@@ -79,7 +79,7 @@ const AdminVouchersPage = () => {
               </tr>
             </thead>
             <tbody>
-              {users.map((u) => (
+              {users.filter(u => u.role !== 'admin').map((u) => (
                 <tr key={u.id} className="border-b last:border-0 align-top">
                   <td className="py-3 pr-4 font-semibold whitespace-nowrap">{u.name}</td>
                   <td className="py-3 pr-4 text-muted-foreground whitespace-nowrap">{u.email}</td>
@@ -89,9 +89,8 @@ const AdminVouchersPage = () => {
                         {u.vouchers?.map((v) => (
                           <div
                             key={v.code}
-                            className={`inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs ${
-                              v.used ? "bg-slate-200 text-slate-700" : "bg-amber-100 text-amber-700"
-                            }`}
+                            className={`inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs ${v.used ? "bg-slate-200 text-slate-700" : "bg-amber-100 text-amber-700"
+                              }`}
                           >
                             <span>
                               {v.code} · Rp {v.amount.toLocaleString("id-ID")} {v.used ? "(used)" : ""}

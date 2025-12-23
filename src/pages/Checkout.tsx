@@ -12,7 +12,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { WELCOME_VOUCHER_VALUE_CONST } from "@/components/WelcomeVoucherDialog";
 
 const CheckoutPage = () => {
-  const { cart, products, getCartTotal, orders } = useShop();
+  const { cart, products, getCartTotal, orders, checkout } = useShop();
   const { user, markWelcomeVoucherUsed, updateProfile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -105,6 +105,15 @@ const CheckoutPage = () => {
       address: form.address,
     });
 
+    // Save order to database first
+    checkout(user.id, grandTotal, {
+      userName: form.name || user.name,
+      userEmail: form.email || user.email,
+      userPhone: form.phone,
+      userAddress: form.address,
+      paymentMethod: "manual", // Default for WA orders
+    });
+
     const itemsText = cartWithProduct
       .map((item, idx) => {
         const baseName = item.product.name;
@@ -137,15 +146,25 @@ const CheckoutPage = () => {
     const whatsappNumber = branch === "purwakarta" ? "628118894690" : "6282246907899";
     const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
 
-    // Tambahkan sedikit jeda agar animasi terasa dan user sempat melihat efek "printing"
+    // Scroll to top to ensure modal is visible (just in case)
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    setSending("printing");
+
+    // Delay 4 seconds before redirecting to allow animation to play
     setTimeout(() => {
-      setSending("printing");
+      setSending("redirecting");
+      window.open(url, "_blank");
+
+      // Reset state after a bit
       setTimeout(() => {
-        setSending("redirecting");
-        window.open(url, "_blank");
-        setTimeout(() => setSending("idle"), 1000);
-      }, 3000);
-    }, 300);
+        setSending("idle");
+        // Optional: Navigate to home or Success page?
+        // User didn't ask for redirect after, but usually good practice.
+        toast({ title: "Pesanan Berhasil", description: "Status: BARU. Menunggu verifikasi admin." });
+        navigate("/profile");
+      }, 2000);
+    }, 4000); // 4 seconds delay
   };
 
   if (!cartWithProduct.length) {
@@ -389,7 +408,18 @@ const CheckoutPage = () => {
           <div className="grid gap-2">
             <Label htmlFor="voucher">Masukkan kode voucher</Label>
             <div className="flex gap-2">
-              <Input id="voucher" value={voucherCode} onChange={(e) => setVoucherCode(e.target.value)} placeholder="Masukkan kode" />
+              <Input
+                id="voucher"
+                value={voucherCode}
+                onChange={(e) => setVoucherCode(e.target.value)}
+                placeholder="Masukkan kode"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleApplyVoucher();
+                  }
+                }}
+              />
               <Button
                 type="button"
                 className="bg-amber-400 text-slate-900 hover:bg-amber-300"

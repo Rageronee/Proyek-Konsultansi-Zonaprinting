@@ -6,12 +6,13 @@ import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recha
 import { OrderStatus } from "@/types";
 
 const AdminOverviewPage = () => {
-  const { orders, getProductPerformance } = useShop();
+  const { orders, getProductPerformance, isLoading } = useShop();
 
   const stats = useMemo(() => {
-    const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
-    const totalOrders = orders.length;
-    const totalItems = orders.reduce((sum, order) => sum + order.items.reduce((s, i) => s + i.quantity, 0), 0);
+    const safeOrders = orders || [];
+    const totalRevenue = safeOrders.reduce((sum, order) => sum + (order.total || 0), 0);
+    const totalOrders = safeOrders.length;
+    const totalItems = safeOrders.reduce((sum, order) => sum + (order.items || []).reduce((s, i) => s + (i.quantity || 0), 0), 0);
     return { totalRevenue, totalOrders, totalItems };
   }, [orders]);
 
@@ -50,6 +51,17 @@ const AdminOverviewPage = () => {
       .sort((a, b) => b.total - a.total)
       .slice(0, 5);
   }, [orders]);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+          <p className="text-muted-foreground animate-pulse">Memuat data dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

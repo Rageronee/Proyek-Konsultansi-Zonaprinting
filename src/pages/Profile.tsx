@@ -104,13 +104,18 @@ const ProfilePage = () => {
               <Button
                 className="bg-amber-500 text-white hover:bg-amber-400"
                 type="button"
-                onClick={() => updateProfile(form)}
+                onClick={async () => {
+                  await updateProfile(form);
+                  toast({
+                    title: "Profil Diperbarui",
+                    description: "Data profil Anda berhasil disimpan.",
+                    className: "bg-green-600 text-white border-none",
+                  });
+                }}
               >
                 Simpan Profil
               </Button>
-              <Button variant="outline" onClick={() => navigate("/checkout")}>
-                Lanjut ke Checkout
-              </Button>
+
             </div>
           </CardContent>
         </Card>

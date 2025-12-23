@@ -6,29 +6,62 @@ import logo from "@/assets/logo-zonaprint.png";
 const Footer = () => {
   const footerLinks = {
     Produk: [
-      { label: "Digital Printing", to: "/category/digital-printing" },
-      { label: "Merchandise", to: "/category/merchandise" },
-      { label: "Sticker & Label", to: "/category/sticker-label" },
-      { label: "Document & Books", to: "/category/documents" },
-      { label: "Packaging", to: "/category/packaging" },
+      { label: "Digital Printing", to: "/products?category=Digital%20Printing" },
+      { label: "Merchandise", to: "/products?category=Merchandise" },
+      { label: "Sticker & Label", to: "/products?category=Sticker" },
+      { label: "Document Books", to: "/products?category=Document%20Books" },
+      { label: "Packaging", to: "/products?category=Packaging" },
     ],
     Perusahaan: [
       { label: "About Us", to: "/about" },
-      { label: "Blog", to: "/about" },
-      { label: "Contact", to: "/contact" },
     ],
     Support: [
-      { label: "Help Center", to: "/contact" },
-      { label: "Track Order", to: "/cart" },
-      { label: "FAQ", to: "/contact" },
-      { label: "Terms of Service", to: "/about" },
+      { label: "Contact", to: "/contact" },
     ],
   };
 
   const socialLinks = [
-    { icon: Facebook, href: "#", label: "Facebook" },
-    { icon: Instagram, href: "#", label: "Instagram" },
-    { icon: Twitter, href: "#", label: "Twitter" },
+    { icon: Instagram, href: "https://www.instagram.com/zonaprintdigitalprinting/", label: "Instagram" },
+    {
+      icon: ({ className }: { className?: string }) => (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={className}
+        >
+          <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
+        </svg>
+      ),
+      href: "https://www.tiktok.com/@zonaprintdigitalprinting",
+      label: "TikTok Center",
+    },
+    {
+      icon: ({ className }: { className?: string }) => (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={className}
+        >
+          <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
+        </svg>
+      ),
+      href: "https://www.tiktok.com/@zonaprintpurwakarta_",
+      label: "TikTok Purwakarta",
+    },
   ];
 
   return (
@@ -47,16 +80,19 @@ const Footer = () => {
               <p className="text-primary-foreground/80 dark:text-slate-300 mb-6 max-w-sm">
                 Solusi cetak digital terpercaya untuk semua kebutuhan bisnis dan personal Anda. Kualitas premium, harga terjangkau.
               </p>
-              
+
               {/* Contact Info */}
               <div className="space-y-3">
                 <div className="flex items-center gap-3 text-primary-foreground/80 dark:text-slate-300">
                   <Phone className="w-5 h-5 text-accent dark:text-amber-400" />
-                  <span>+62 812-3456-7890</span>
+                  <div className="flex flex-col text-sm">
+                    <span>+62 822-4690-7899 (Wanayasa)</span>
+                    <span>+62 811-8894-690 (Purwakarta)</span>
+                  </div>
                 </div>
                 <div className="flex items-center gap-3 text-primary-foreground/80 dark:text-slate-300">
                   <Mail className="w-5 h-5 text-accent dark:text-amber-400" />
-                  <span>info@zonaprint.com</span>
+                  <span>zonaprintwanayasa@gmail.com</span>
                 </div>
                 <div className="flex items-center gap-3 text-primary-foreground/80 dark:text-slate-300">
                   <MapPin className="w-5 h-5 text-accent dark:text-amber-400" />
@@ -121,7 +157,7 @@ const Footer = () => {
       <div className="border-t border-primary-foreground/20 dark:border-slate-800">
         <div className="container mx-auto px-4 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-primary-foreground/80 dark:text-slate-400">
-            <p>© 2024 ZONAPRINT. All rights reserved.</p>
+            <p>© 2025 ZONAPRINT X MKB UPI Purwakarta. All rights reserved.</p>
             <div className="flex gap-6">
               <Link to="/about" className="hover:text-accent dark:hover:text-amber-400 transition-colors">
                 Privacy Policy
