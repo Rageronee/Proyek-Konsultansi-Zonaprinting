@@ -3,10 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Printer } from "lucide-react";
 import { useShop } from "@/providers/ShopProvider";
-import { OrderStatus } from "@/types";
+import { OrderStatus, Order } from "@/types";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import OrderPrint from "@/components/admin/OrderPrint";
 
 const AdminOrdersPage = () => {
   const { orders, updateOrderStatus, addManualOrder, deleteOrder } = useShop();
@@ -16,6 +18,7 @@ const AdminOrdersPage = () => {
   const [manualTotal, setManualTotal] = useState("");
   const [manualNote, setManualNote] = useState("");
   const [editKey, setEditKey] = useState("");
+  const [printOrderData, setPrintOrderData] = useState<Order | null>(null);
 
   const ADMIN_KEY = "ZP-ADMIN-2025";
 
@@ -281,24 +284,33 @@ const AdminOrdersPage = () => {
                     )}
                   </td>
                   <td className="py-3 pr-4">
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => {
-                        if (editKey !== ADMIN_KEY) {
-                          toast({
-                            title: "Kunci admin salah",
-                            description: "Masukkan kunci admin yang benar untuk menghapus pesanan.",
-                            variant: "destructive",
-                          });
-                          return;
-                        }
-                        deleteOrder(order.id);
-                        toast({ title: "Pesanan dihapus", description: `Pesanan ${order.id} telah dihapus.` });
-                      }}
-                    >
-                      Hapus
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setPrintOrderData(order)}
+                      >
+                        <Printer className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => {
+                          if (editKey !== ADMIN_KEY) {
+                            toast({
+                              title: "Kunci admin salah",
+                              description: "Masukkan kunci admin yang benar untuk menghapus pesanan.",
+                              variant: "destructive",
+                            });
+                            return;
+                          }
+                          deleteOrder(order.id);
+                          toast({ title: "Pesanan dihapus", description: `Pesanan ${order.id} telah dihapus.` });
+                        }}
+                      >
+                        Hapus
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -313,6 +325,13 @@ const AdminOrdersPage = () => {
           </table>
         </CardContent>
       </Card>
+
+      {printOrderData && (
+        <OrderPrint
+          order={printOrderData}
+          onClose={() => setPrintOrderData(null)}
+        />
+      )}
     </div>
   );
 };

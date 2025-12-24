@@ -30,6 +30,9 @@ const WelcomeVoucherDialog = () => {
 
   if (!user || user.role === "admin") return null;
 
+  // Don't show on checkout page to avoid interruptions
+  if (window.location.pathname === "/checkout" || window.location.pathname.startsWith("/admin")) return null;
+
   return (
     <Dialog open={open} onOpenChange={(val) => !val && handleClose()}>
       <DialogContent className="sm:max-w-md bg-transparent border-none shadow-none p-0 flex flex-col items-center justify-start pt-32 overflow-visible min-h-screen">

@@ -237,6 +237,19 @@ const Navbar = () => {
 
           {/* Mobile Right Controls */}
           <div className="md:hidden flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden rounded-full border border-slate-200/70 dark:border-slate-700"
+              onClick={toggleTheme}
+              aria-label="Toggle theme"
+            >
+              {theme === "dark" ? (
+                <Sun className="h-4 w-4 text-amber-300" />
+              ) : (
+                <Moon className="h-4 w-4 text-slate-700" />
+              )}
+            </Button>
             {!isAdmin && (
               <button
                 onClick={() => navigate("/cart")}
@@ -295,19 +308,7 @@ const Navbar = () => {
                   Keranjang {cartCount > 0 && <span className="ml-1">({cartCount})</span>}
                 </Button>
               )}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="self-start rounded-full border border-slate-200/70 dark:border-slate-700"
-                onClick={toggleTheme}
-                aria-label="Toggle theme"
-              >
-                {theme === "dark" ? (
-                  <Sun className="h-4 w-4 text-amber-300" />
-                ) : (
-                  <Moon className="h-4 w-4 text-slate-700" />
-                )}
-              </Button>
+
               {isAuthenticated && !isAdmin && (
                 <Button variant="outline" onClick={() => navigate("/profile")}>
                   {user?.name ?? "Profil"}

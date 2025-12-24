@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useShop } from "@/providers/ShopProvider";
 import { useMemo } from "react";
-import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, ResponsiveContainer, Tooltip, XAxis, YAxis, Cell } from "recharts";
 import { OrderStatus } from "@/types";
 
 const AdminOverviewPage = () => {
@@ -98,11 +98,18 @@ const AdminOverviewPage = () => {
           </CardHeader>
           <CardContent className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={topProducts}>
-                <XAxis dataKey="name" hide />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="revenue" fill="#0f172a" />
+              <BarChart data={topProducts} layout="vertical" margin={{ top: 0, right: 30, left: 20, bottom: 0 }}>
+                <XAxis type="number" hide />
+                <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 10 }} interval={0} />
+                <Tooltip
+                  formatter={(value: number) => `Rp ${value.toLocaleString("id-ID")}`}
+                  cursor={{ fill: 'transparent' }}
+                />
+                <Bar dataKey="revenue" radius={[0, 4, 4, 0]}>
+                  {topProducts.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899"][index % 5]} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
