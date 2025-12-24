@@ -7,15 +7,14 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import logo from "@/assets/main_logo.svg";
 import { useAuth } from "@/providers/AuthProvider";
 import { useShop } from "@/providers/ShopProvider";
+import { useTheme } from "@/providers/ThemeProvider";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
-  const [theme, setTheme] = useState<"light" | "dark">(
-    (localStorage.getItem("zp-theme") as "light" | "dark") || "light",
-  );
+  const { theme, toggleTheme } = useTheme();
   const { user, isAdmin, isAuthenticated, logout } = useAuth();
   const { cart, clearCart, refresh, isLoading, orders } = useShop();
   const navigate = useNavigate();
@@ -30,19 +29,6 @@ const Navbar = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  useEffect(() => {
-    if (theme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-    localStorage.setItem("zp-theme", theme);
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme((prev) => (prev === "light" ? "dark" : "light"));
-  };
 
   const menuItems = [
     { name: "Home", to: "/" },

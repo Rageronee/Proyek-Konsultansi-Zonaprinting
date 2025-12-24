@@ -169,7 +169,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!existing || existing.password !== current) {
       return { success: false, message: "Password lama tidak sesuai" };
     }
-    setState((prev) => updateUserFields(prev, state.user!.id, { password: next }));
+    updateProfile({ password: next }); // This handles both local state (optimistic) and DB update
     return { success: true };
   };
 

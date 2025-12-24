@@ -54,6 +54,9 @@ const CheckoutPage = () => {
     });
   }, [user]);
 
+  // Store items for the receipt animation so they don't disappear when cart is cleared
+  const [receiptItems, setReceiptItems] = useState<typeof cartWithProduct>([]);
+
   const subtotal = getCartTotal();
   const voucherDiscount = voucherAmount;
   const grandTotal = Math.max(subtotal - voucherDiscount, 0);
@@ -98,14 +101,23 @@ const CheckoutPage = () => {
       return;
     }
 
+    // Capture items for animation BEFORE checkout triggers cart clear
+    setReceiptItems(cartWithProduct);
+    setSending("printing");
+    // Scroll to top to ensure modal is visible
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
     updateProfile({
       name: form.name,
       email: form.email,
       phone: form.phone,
       address: form.address,
     });
+    // Trigger optimistic save to DB is handled inside updateProfile now (via AuthProvider)
+    // But we want to ensure user knows it's saved? No need, implicit.
 
-    // Save order to database first
+    // Save order to database
+    // We don't await this blocking usage of animation
     checkout(user.id, grandTotal, {
       userName: form.name || user.name,
       userEmail: form.email || user.email,
@@ -146,28 +158,21 @@ const CheckoutPage = () => {
     const whatsappNumber = branch === "purwakarta" ? "628118894690" : "6282246907899";
     const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
 
-    // Scroll to top to ensure modal is visible (just in case)
-    window.scrollTo({ top: 0, behavior: "smooth" });
-
-    setSending("printing");
-
-    // Delay 4 seconds before redirecting to allow animation to play
+    // Delay 3 seconds for animation, then redirect
     setTimeout(() => {
       setSending("redirecting");
       window.open(url, "_blank");
 
-      // Reset state after a bit
+      // Small delay after opening WA before going to profile
       setTimeout(() => {
         setSending("idle");
-        // Optional: Navigate to home or Success page?
-        // User didn't ask for redirect after, but usually good practice.
         toast({ title: "Pesanan Berhasil", description: "Status: BARU. Menunggu verifikasi admin." });
         navigate("/profile");
-      }, 2000);
-    }, 4000); // 4 seconds delay
+      }, 1000);
+    }, 3000);
   };
 
-  if (!cartWithProduct.length) {
+  if (!cartWithProduct.length && sending === "idle") {
     return (
       <div className="container mx-auto px-4 py-12">
         <Card className="p-6 text-center">
@@ -180,10 +185,13 @@ const CheckoutPage = () => {
     );
   }
 
+  // Use receiptItems if we are sending, otherwise regular cart items
+  const displayItems = sending !== "idle" ? receiptItems : cartWithProduct;
+
   return (
     <div className="container mx-auto px-4 lg:px-8 py-12 grid gap-8 lg:grid-cols-[2fr_1fr] relative">
       {sending !== "idle" && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60">
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -210,8 +218,8 @@ const CheckoutPage = () => {
                   initial={{ y: "-100%" }}
                   animate={{ y: 0 }}
                   transition={{
-                    duration: 1.4,
-                    ease: "easeInOut",
+                    duration: 2.5,
+                    ease: "easeOut",
                   }}
                   className="w-full bg-slate-50 text-slate-900 rounded-xl shadow-md px-4 py-3 text-xs font-mono"
                 >
@@ -222,7 +230,7 @@ const CheckoutPage = () => {
                     </span>
                   </div>
                   <div className="space-y-0.5 max-h-16 overflow-hidden">
-                    {cartWithProduct.slice(0, 3).map((item) => (
+                    {displayItems.slice(0, 3).map((item) => (
                       <div key={item.productId} className="flex justify-between gap-2">
                         <span className="truncate">{item.product.name}</span>
                         <span>
@@ -231,9 +239,9 @@ const CheckoutPage = () => {
                         </span>
                       </div>
                     ))}
-                    {cartWithProduct.length > 3 && (
+                    {displayItems.length > 3 && (
                       <p className="text-slate-500 text-[10px]">
-                        +{cartWithProduct.length - 3} item lainnya...
+                        +{displayItems.length - 3} item lainnya...
                       </p>
                     )}
                   </div>
@@ -260,9 +268,9 @@ const CheckoutPage = () => {
                   initial={{ x: "-100%" }}
                   animate={{ x: "0%" }}
                   transition={{
-                    duration: 1.6,
-                    ease: "easeInOut",
-                    repeat: sending === "printing" ? Infinity : 0,
+                    duration: 3,
+                    ease: "linear",
+                    repeat: 0,
                   }}
                   className="h-full w-full bg-gradient-to-r from-primary via-amber-400 to-primary"
                 />

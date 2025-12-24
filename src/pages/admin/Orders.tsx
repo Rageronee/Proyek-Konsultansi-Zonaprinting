@@ -4,6 +4,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Printer } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useShop } from "@/providers/ShopProvider";
 import { OrderStatus, Order } from "@/types";
 import { Input } from "@/components/ui/input";
@@ -11,12 +22,17 @@ import { useToast } from "@/components/ui/use-toast";
 import OrderPrint from "@/components/admin/OrderPrint";
 
 const AdminOrdersPage = () => {
-  const { orders, updateOrderStatus, addManualOrder, deleteOrder } = useShop();
+  const { orders, updateOrderStatus, addManualOrder, deleteOrder, products } = useShop();
   const { toast } = useToast();
   const [manualKey, setManualKey] = useState("");
   const [manualCustomer, setManualCustomer] = useState("");
   const [manualTotal, setManualTotal] = useState("");
   const [manualNote, setManualNote] = useState("");
+  const [deleteId, setDeleteId] = useState<string | null>(null); // State for delete dialog
+  // Detailed Manual Order State
+  const [manualItems, setManualItems] = useState<{ name: string, price: string, qty: string }[]>([
+    { name: "", price: "", qty: "1" }
+  ]);
   const [editKey, setEditKey] = useState("");
   const [printOrderData, setPrintOrderData] = useState<Order | null>(null);
 
@@ -52,11 +68,14 @@ const AdminOrdersPage = () => {
               value={manualCustomer}
               onChange={(e) => setManualCustomer(e.target.value)}
             />
-            <Input
+            {/* <Input
               placeholder="Total transaksi (Rp)"
               value={manualTotal}
-              onChange={(e) => setManualTotal(e.target.value.replace(/[^0-9]/g, ""))}
-            />
+              onChange={(e) => {
+                const numeric = e.target.value.replace(/\D/g, "");
+                setManualTotal(numeric ? Number(numeric).toLocaleString("id-ID") : "");
+              }}
+            /> */}
             <Input
               placeholder="Catatan produk / paket"
               value={manualNote}
@@ -69,6 +88,64 @@ const AdminOrdersPage = () => {
               onChange={(e) => setManualKey(e.target.value)}
             />
           </div>
+
+          <div className="space-y-2 border rounded-md p-3 bg-slate-50 dark:bg-slate-900/50">
+            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Item Pesanan</div>
+            {manualItems.map((item, idx) => (
+              <div key={idx} className="grid grid-cols-[2fr_1fr_1fr_auto] gap-2 items-end">
+                <div className="relative">
+                  <Input
+                    placeholder="Nama Produk"
+                    value={item.name}
+                    onChange={e => {
+                      const newItems = [...manualItems];
+                      newItems[idx].name = e.target.value;
+                      setManualItems(newItems);
+                    }}
+                    list={`products-list-${idx}`}
+                  />
+                  <datalist id={`products-list-${idx}`}>
+                    {products.map(p => (
+                      <option key={p.id} value={p.name} />
+                    ))}
+                  </datalist>
+                </div>
+                <Input
+                  placeholder="Harga (@)"
+                  value={item.price}
+                  onChange={e => {
+                    const val = e.target.value.replace(/\D/g, "");
+                    const newItems = [...manualItems];
+                    newItems[idx].price = val ? Number(val).toLocaleString("id-ID") : "";
+                    setManualItems(newItems);
+                  }}
+                />
+                <Input
+                  placeholder="Qty"
+                  type="number"
+                  min={1}
+                  value={item.qty}
+                  onChange={e => {
+                    const newItems = [...manualItems];
+                    newItems[idx].qty = e.target.value;
+                    setManualItems(newItems);
+                  }}
+                />
+                <Button variant="ghost" size="icon" disabled={manualItems.length === 1} onClick={() => {
+                  const newItems = manualItems.filter((_, i) => i !== idx);
+                  setManualItems(newItems);
+                }}>
+                  <span className="text-red-500 text-lg">×</span>
+                </Button>
+              </div>
+            ))}
+            <Button variant="outline" size="sm" onClick={() => setManualItems([...manualItems, { name: "", price: "", qty: "1" }])}>
+              + Tambah Item
+            </Button>
+            <div className="text-right text-sm font-bold pt-2">
+              Total: Rp {manualItems.reduce((acc, item) => acc + (Number(item.price.replace(/\./g, "")) * Number(item.qty)), 0).toLocaleString("id-ID")}
+            </div>
+          </div>
           <div className="flex items-center justify-between text-xs text-muted-foreground mt-1">
             <span>
               Kunci wajib diisi dengan kode yang benar untuk menambahkan pesanan offline (hybrid data).
@@ -77,29 +154,39 @@ const AdminOrdersPage = () => {
           </div>
           <Button
             className="mt-2"
-            onClick={() => {
-              const totalNumber = Number(manualTotal);
-              if (!manualCustomer || !totalNumber) {
-                toast({
-                  title: "Data belum lengkap",
-                  description: "Nama pelanggan dan total transaksi wajib diisi.",
-                  variant: "destructive",
-                });
+            onClick={async () => {
+              if (!manualCustomer) {
+                toast({ title: "Data belum lengkap", description: "Nama pelanggan wajib diisi.", variant: "destructive" });
                 return;
               }
-              const result = addManualOrder({
+
+              const validItems = manualItems.filter(i => i.name && i.price);
+              if (validItems.length === 0) {
+                toast({ title: "Item kosong", description: "Minimal isi satu item produk.", variant: "destructive" });
+                return;
+              }
+
+              const itemsPayload = validItems.map(i => ({
+                productId: "manual-" + Math.random().toString(36).substr(2, 9),
+                name: i.name,
+                price: Number(i.price.replace(/\./g, "")),
+                quantity: Number(i.qty)
+              }));
+
+              const result = await addManualOrder({
                 key: manualKey,
                 customer: manualCustomer,
-                total: totalNumber,
+                items: itemsPayload,
                 note: manualNote,
               });
+
               if (!result.success) {
                 toast({ title: "Gagal menambahkan pesanan", description: result.message, variant: "destructive" });
                 return;
               }
               toast({ title: "Pesanan offline ditambahkan", description: result.message });
               setManualCustomer("");
-              setManualTotal("");
+              setManualItems([{ name: "", price: "", qty: "1" }]);
               setManualNote("");
               setManualKey("");
             }}
@@ -198,7 +285,7 @@ const AdminOrdersPage = () => {
                   <td className="py-3 pr-4 font-mono text-xs">{order.id}</td>
                   <td className="py-3 pr-4">
                     <div className="font-semibold">{order.userName || order.userId}</div>
-                    <div className="text-xs text-muted-foreground">{order.userEmail}</div>
+                    {order.userEmail !== "offline@zonaprint.com" && <div className="text-xs text-muted-foreground">{order.userEmail}</div>}
                     <div className="text-xs text-muted-foreground">{order.userPhone}</div>
                   </td>
                   <td className="py-3 pr-4 space-y-1">
@@ -304,8 +391,7 @@ const AdminOrdersPage = () => {
                             });
                             return;
                           }
-                          deleteOrder(order.id);
-                          toast({ title: "Pesanan dihapus", description: `Pesanan ${order.id} telah dihapus.` });
+                          setDeleteId(order.id);
                         }}
                       >
                         Hapus
@@ -326,13 +412,41 @@ const AdminOrdersPage = () => {
         </CardContent>
       </Card>
 
-      {printOrderData && (
-        <OrderPrint
-          order={printOrderData}
-          onClose={() => setPrintOrderData(null)}
-        />
-      )}
-    </div>
+      {
+        printOrderData && (
+          <OrderPrint
+            order={printOrderData}
+            onClose={() => setPrintOrderData(null)}
+          />
+        )
+      }
+
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Apakah Anda yakin?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tindakan ini tidak dapat dibatalkan. Pesanan #{deleteId?.slice(0, 8)} akan dihapus secara permanen dari database.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700 text-white"
+              onClick={() => {
+                if (deleteId) {
+                  deleteOrder(deleteId);
+                  toast({ title: "Pesanan dihapus", description: `Pesanan telah dihapus.` });
+                  setDeleteId(null);
+                }
+              }}
+            >
+              Ya, Hapus
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div >
   );
 };
 

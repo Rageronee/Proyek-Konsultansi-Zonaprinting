@@ -2,7 +2,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { BarChart3, LayoutDashboard, LogOut, Package, ShoppingCart, Home, Gift, Bell, Moon, Sun, RefreshCw } from "lucide-react";
 import { useAuth } from "@/providers/AuthProvider";
 import { useShop } from "@/providers/ShopProvider";
-import { NavLink, Outlet } from "react-router-dom";
+import { useTheme } from "@/providers/ThemeProvider";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useEffect, useState } from "react";
@@ -11,22 +12,9 @@ import { Menu } from "lucide-react";
 const AdminLayout = () => {
   const { logout } = useAuth();
   const { orders, refresh, isLoading } = useShop();
+  const { toggleTheme } = useTheme();
 
   const newOrderCount = (orders || []).filter((o) => o.status === "baru").length;
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    const isDark = document.documentElement.classList.toggle("dark");
-    localStorage.setItem("theme", isDark ? "dark" : "light");
-  };
 
   const navItems = [
     { to: "/admin", label: "Overview", icon: LayoutDashboard },
@@ -35,6 +23,12 @@ const AdminLayout = () => {
     { to: "/admin/analytics", label: "Analitik", icon: BarChart3 },
     { to: "/admin/vouchers", label: "Voucher", icon: Gift },
   ];
+
+  const location = useLocation();
+  const activeItem = navItems.find((item) =>
+    item.to === "/admin" ? location.pathname === "/admin" : location.pathname.startsWith(item.to)
+  );
+  const pageTitle = activeItem?.label || "Overview";
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50">
@@ -169,7 +163,7 @@ const AdminLayout = () => {
           {/* Desktop Header for Notifications */}
           <header className="hidden md:flex sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 px-8 py-4 justify-between items-center">
             <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">
-              {navItems.find(i => window.location.pathname.startsWith(i.to) && i.to !== "/admin")?.label || "Overview"}
+              {pageTitle}
             </h2>
             <div className="flex items-center gap-4">
               <button

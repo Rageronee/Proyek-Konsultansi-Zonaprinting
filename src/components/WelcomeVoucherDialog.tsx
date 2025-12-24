@@ -15,10 +15,10 @@ const WelcomeVoucherDialog = () => {
   useEffect(() => {
     if (user && !user.welcomeVoucherShown) {
       setOpen(true);
-      // Automatically finish "printing" after 2s
+      // Automatically finish "printing" after animation (4s + 0.5s delay)
       const timer = setTimeout(() => {
         setStep("done");
-      }, 2000);
+      }, 4500);
       return () => clearTimeout(timer);
     }
   }, [user]);
@@ -30,12 +30,12 @@ const WelcomeVoucherDialog = () => {
 
   if (!user || user.role === "admin") return null;
 
-  // Don't show on checkout page to avoid interruptions
-  if (window.location.pathname === "/checkout" || window.location.pathname.startsWith("/admin")) return null;
+  // Don't show on checkout page or any other page except home
+  if (window.location.pathname !== "/") return null;
 
   return (
     <Dialog open={open} onOpenChange={(val) => !val && handleClose()}>
-      <DialogContent className="sm:max-w-md bg-transparent border-none shadow-none p-0 flex flex-col items-center justify-start pt-32 overflow-visible min-h-screen">
+      <DialogContent className="sm:max-w-md bg-transparent border-none shadow-none p-0 flex flex-col items-center justify-start pt-32 overflow-visible min-h-screen [&>button:last-child]:hidden">
 
         <div className="relative flex flex-col items-center justify-center">
 

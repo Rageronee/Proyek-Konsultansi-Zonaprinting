@@ -28,6 +28,7 @@ import AdminVouchersPage from "./pages/admin/Vouchers";
 import { AuthProvider } from "./providers/AuthProvider";
 import { ShopProvider } from "./providers/ShopProvider";
 import CategoryProductsPage from "./pages/CategoryProducts";
+import { ThemeProvider } from "./providers/ThemeProvider";
 
 const queryClient = new QueryClient();
 
@@ -40,47 +41,49 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <ShopProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <ScrollToTop />
-              <Routes>
-                <Route element={<SiteLayout />}>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/products" element={<ProductsPage />} />
-                  <Route path="/products/:id" element={<ProductDetailPage />} />
-                  <Route path="/cart" element={<CartPage />} />
-                  <Route path="/checkout" element={<CheckoutPage />} />
-                  <Route path="/about" element={<AboutPage />} />
-                  <Route path="/contact" element={<ContactPage />} />
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/signup" element={<SignupPage />} />
+      <ThemeProvider defaultTheme="light" storageKey="theme">
+        <AuthProvider>
+          <ShopProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <ScrollToTop />
+                <Routes>
+                  <Route element={<SiteLayout />}>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/products" element={<ProductsPage />} />
+                    <Route path="/products/:id" element={<ProductDetailPage />} />
+                    <Route path="/cart" element={<CartPage />} />
+                    <Route path="/checkout" element={<CheckoutPage />} />
+                    <Route path="/about" element={<AboutPage />} />
+                    <Route path="/contact" element={<ContactPage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/signup" element={<SignupPage />} />
 
 
-                  <Route element={<ProtectedRoute />}>
-                    <Route path="/profile" element={<ProfilePage />} />
+                    <Route element={<ProtectedRoute />}>
+                      <Route path="/profile" element={<ProfilePage />} />
+                    </Route>
                   </Route>
-                </Route>
 
-                <Route element={<ProtectedRoute requireAdmin />}>
-                  <Route element={<AdminLayout />}>
-                    <Route path="/admin" element={<AdminOverviewPage />} />
-                    <Route path="/admin/products" element={<AdminProductsPage />} />
-                    <Route path="/admin/orders" element={<AdminOrdersPage />} />
-                    <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
-                    <Route path="/admin/vouchers" element={<AdminVouchersPage />} />
+                  <Route element={<ProtectedRoute requireAdmin />}>
+                    <Route element={<AdminLayout />}>
+                      <Route path="/admin" element={<AdminOverviewPage />} />
+                      <Route path="/admin/products" element={<AdminProductsPage />} />
+                      <Route path="/admin/orders" element={<AdminOrdersPage />} />
+                      <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
+                      <Route path="/admin/vouchers" element={<AdminVouchersPage />} />
+                    </Route>
                   </Route>
-                </Route>
 
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </ShopProvider>
-      </AuthProvider>
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </ShopProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 };

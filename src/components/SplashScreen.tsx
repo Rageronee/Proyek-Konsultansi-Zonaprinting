@@ -13,12 +13,23 @@ const SplashScreen = ({ onComplete }: { onComplete: () => void }) => {
         return () => clearTimeout(timer);
     }, [onComplete]);
 
+    const [theme, setTheme] = useState("light");
+
+    useEffect(() => {
+        const storedTheme = localStorage.getItem("theme");
+        if (storedTheme === "dark" || (!storedTheme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+            setTheme("dark");
+        }
+    }, []);
+
+    // Force dark class if needed for this component specific context if root isn't ready
+    // But better to just use colors that work or manually apply class to wrapper
     return (
         <motion.div
             initial={{ opacity: 1 }}
             animate={{ opacity: exit ? 0 : 1 }}
             transition={{ duration: 0.5 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-background"
+            className={`fixed inset-0 z-50 flex items-center justify-center ${theme === "dark" ? "bg-slate-950" : "bg-white"}`}
         >
             <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}

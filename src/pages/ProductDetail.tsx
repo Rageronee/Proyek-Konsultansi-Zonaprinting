@@ -79,10 +79,22 @@ const ProductDetailPage = () => {
           <p className="text-muted-foreground">{product.description}</p>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-2xl font-semibold">Rp {product.price.toLocaleString("id-ID")}</p>
-          <p className="text-sm text-muted-foreground">Stok tersedia: {product.stock}</p>
+          {product.stock > 0 ? (
+            <>
+              <p className="text-2xl font-semibold">Rp {product.price.toLocaleString("id-ID")}</p>
+              <p className="text-sm text-muted-foreground">Stok tersedia: {product.stock}</p>
+            </>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-2xl font-semibold text-muted-foreground line-through">Rp {product.price.toLocaleString("id-ID")}</p>
+              <Badge variant="destructive" className="mb-2">Stok Habis</Badge>
+              <p className="text-sm text-amber-600 font-medium bg-amber-50 p-3 rounded-md border border-amber-200">
+                Mohon maaf, stok produk ini sedang kosong. Silakan cek produk sejenis di bawah ini atau hubungi admin.
+              </p>
+            </div>
+          )}
 
-          {product.options && product.options.length > 0 && (
+          {product.options && product.options.length > 0 && product.stock > 0 && (
             <div className="space-y-2">
               <p className="text-sm font-medium">Pilih ukuran / gramasi cetak</p>
               <div className="flex flex-wrap gap-2">
@@ -108,7 +120,7 @@ const ProductDetailPage = () => {
             </div>
           )}
 
-          {!isAdmin && (
+          {!isAdmin && product.stock > 0 && (
             <div className="space-y-2">
               <p className="text-sm font-medium">Catatan khusus untuk pesanan ini <span className="text-red-500">*</span></p>
               <textarea
@@ -136,6 +148,27 @@ const ProductDetailPage = () => {
             </div>
           )}
 
+          {product.stock === 0 && (
+            <div className="mt-4 pt-4 border-t border-slate-100">
+              <p className="font-medium mb-3">Saran Produk Lain:</p>
+              <div className="grid grid-cols-2 gap-3">
+                {products
+                  .filter(p => p.category === product.category && p.id !== product.id && p.stock > 0)
+                  .slice(0, 2)
+                  .map(p => (
+                    <div key={p.id} className="border rounded-lg p-3 cursor-pointer hover:bg-slate-50 transition-colors" onClick={() => navigate(`/products/${p.id}`)}>
+                      <img src={p.image} alt={p.name} className="w-full h-24 object-cover rounded-md mb-2" />
+                      <p className="text-xs font-semibold truncate">{p.name}</p>
+                      <p className="text-xs text-primary font-medium">Rp {p.price.toLocaleString("id-ID")}</p>
+                    </div>
+                  ))}
+                {!products.some(p => p.category === product.category && p.id !== product.id && p.stock > 0) && (
+                  <p className="text-xs text-muted-foreground italic col-span-2">Tidak ada produk sejenis yang tersedia saat ini.</p>
+                )}
+              </div>
+            </div>
+          )}
+
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
             {isAuthenticated && isAdmin ? (
               <Button
@@ -147,11 +180,13 @@ const ProductDetailPage = () => {
             ) : (
               <Button
                 onClick={handleAdd}
-                disabled={isAdding}
-                className={`flex-1 text-sm md:text-base whitespace-nowrap overflow-hidden relative transition-all duration-300 ${isAdding ? "bg-green-600 hover:bg-green-700" : ""}`}
+                disabled={isAdding || product.stock === 0}
+                className={`flex-1 text-sm md:text-base whitespace-nowrap overflow-hidden relative transition-all duration-300 ${isAdding ? "bg-green-600 hover:bg-green-700" : ""} ${product.stock === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 <AnimatePresence mode="wait">
-                  {isAdding ? (
+                  {product.stock === 0 ? (
+                    <span key="disabled">Stok Habis</span>
+                  ) : isAdding ? (
                     <motion.div
                       key="added"
                       initial={{ y: 20, opacity: 0 }}

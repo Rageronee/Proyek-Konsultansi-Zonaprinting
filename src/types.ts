@@ -86,3 +86,21 @@ export type UploadAttachment = {
 
 export type PaymentMethod = "qris" | "bca" | "mandiri" | "bri" | "manual";
 
+
+export type Review = {
+  id: string;
+  order_id: string;
+  user_id: string;
+  user_name: string;
+  rating: number;
+  comment: string;
+  created_at: string;
+};
+
+export interface Questionnaire {
+  id: string;
+  user_id: string;
+  order_id: string;
+  answers: Record<string, any>;
+  created_at: string;
+}
