@@ -14,7 +14,7 @@ const Hero = () => {
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
       {/* Background Gradient */}
       <div className="absolute inset-0 gradient-hero" />
-      
+
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         {[...Array(3)].map((_, i) => (
@@ -44,8 +44,8 @@ const Hero = () => {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
           <motion.div
-            initial={{ opacity: 0, clipPath: "inset(0 0 100% 0)" }}
-            animate={{ opacity: 1, clipPath: "inset(0 0 0% 0)" }}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: "easeOut" }}
             className="text-center lg:text-left"
           >
@@ -125,10 +125,10 @@ const Hero = () => {
             {floatingCards.map((card, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, clipPath: "inset(0 0 100% 0)" }}
+                initial={{ opacity: 0, scale: 0.8 }}
                 animate={{
                   opacity: 1,
-                  clipPath: "inset(0 0 0% 0)",
+                  scale: 1,
                   rotate: [card.rotate, card.rotate + 5, card.rotate],
                 }}
                 transition={{

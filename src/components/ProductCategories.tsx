@@ -68,10 +68,10 @@ const ProductCategories = () => {
             return (
               <motion.div
                 key={category.name}
-                initial={{ opacity: 0, clipPath: "inset(0 0 100% 0)" }}
-                whileInView={{ opacity: 1, clipPath: "inset(0 0 0% 0)" }}
-                viewport={{ once: true, margin: "-50px" }}
-                transition={{ delay: index * 0.1, duration: 0.6, ease: "easeOut" }}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-10%" }}
+                transition={{ delay: index * 0.1, duration: 0.5, ease: "easeOut" }}
                 className="h-full"
               >
                 <Link to={`/products?category=${encodeURIComponent(category.name)}`} className="block h-full">

@@ -43,10 +43,10 @@ const FeaturedProducts = () => {
           {popularProducts.map((product, index) => (
             <motion.div
               key={product!.id}
-              initial={{ opacity: 0, clipPath: "inset(0 0 100% 0)" }}
-              whileInView={{ opacity: 1, clipPath: "inset(0 0 0% 0)" }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ delay: index * 0.1, duration: 0.6, ease: "easeOut" }}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-10%" }}
+              transition={{ delay: index * 0.1, duration: 0.5, ease: "easeOut" }}
             >
               <Card className="group h-full overflow-hidden border-2 hover:border-primary/50 transition-all duration-500 shadow-card hover:shadow-elegant cursor-pointer">
                 {/* Image Container */}
