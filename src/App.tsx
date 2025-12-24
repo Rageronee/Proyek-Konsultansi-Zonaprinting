@@ -28,6 +28,9 @@ import AdminVouchersPage from "./pages/admin/Vouchers";
 import { AuthProvider } from "./providers/AuthProvider";
 import { ShopProvider } from "./providers/ShopProvider";
 import CategoryProductsPage from "./pages/CategoryProducts";
+import Terms from "./pages/Terms";
+import Refund from "./pages/Refund";
+import FAQ from "./pages/FAQ";
 import { ThemeProvider } from "./providers/ThemeProvider";
 
 const queryClient = new QueryClient();
@@ -57,6 +60,9 @@ const App = () => {
                     <Route path="/cart" element={<CartPage />} />
                     <Route path="/checkout" element={<CheckoutPage />} />
                     <Route path="/about" element={<AboutPage />} />
+                    <Route path="/terms" element={<Terms />} />
+                    <Route path="/refund" element={<Refund />} />
+                    <Route path="/faq" element={<FAQ />} />
                     <Route path="/contact" element={<ContactPage />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/signup" element={<SignupPage />} />

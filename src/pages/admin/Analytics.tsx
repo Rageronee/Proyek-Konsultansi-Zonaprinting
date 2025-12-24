@@ -317,6 +317,96 @@ const AdminAnalyticsPage = () => {
       </div>
 
 
+      {/* Operational Insights & Top Products Section */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        {/* Stock Alert Card */}
+        <Card className="col-span-2 shadow-sm border-l-4 border-l-red-500">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <AlertCircle className="w-5 h-5 text-red-500" />
+              Peringatan Stok
+            </CardTitle>
+            <CardDescription>Produk dengan stok menipis ({"<"} 5)</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {products.filter(p => p.stock <= 5).length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
+                <Package className="w-8 h-8 mb-2 opacity-50" />
+                <p>Semua stok aman!</p>
+              </div>
+            ) : (
+              <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
+                {products.filter(p => p.stock <= 5).map(product => (
+                  <div key={product.id} className="flex items-center justify-between border-b last:border-0 pb-3 last:pb-0">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-md bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                        <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm line-clamp-1">{product.name}</p>
+                        <p className="text-xs text-muted-foreground">Kategori: {product.category}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-bold ${product.stock === 0 ? "bg-red-100 text-red-600 dark:bg-red-900/30" : "bg-amber-100 text-amber-600 dark:bg-amber-900/30"
+                        }`}>
+                        {product.stock} Unit
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Top Selling Products Table */}
+        <Card className="col-span-5 shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-lg">Produk Terlaris</CardTitle>
+            <CardDescription>Performa penjualan produk berdasarkan volume</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left text-muted-foreground">
+                    <th className="pb-3 font-medium">Produk</th>
+                    <th className="pb-3 font-medium">Harga</th>
+                    <th className="pb-3 font-medium text-center">Terjual</th>
+                    <th className="pb-3 font-medium text-right">Pendapatan</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[...performance].sort((a, b) => b.totalSold - a.totalSold).slice(0, 5).map((item, idx) => (
+                    <tr key={idx} className="border-b last:border-0 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
+                      <td className="py-3 font-medium">{item.name}</td>
+                      <td className="py-3 text-muted-foreground">
+                        {products.find(p => p.id === item.productId)?.price
+                          ? `Rp ${products.find(p => p.id === item.productId)?.price.toLocaleString("id-ID")}`
+                          : "-"
+                        }
+                      </td>
+                      <td className="py-3 text-center">
+                        <span className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 px-2 py-1 rounded-full text-xs font-bold">
+                          {item.totalSold}
+                        </span>
+                      </td>
+                      <td className="py-3 text-right font-medium">Rp {item.revenue.toLocaleString("id-ID")}</td>
+                    </tr>
+                  ))}
+                  {performance.length === 0 && (
+                    <tr>
+                      <td colSpan={4} className="py-8 text-center text-muted-foreground">Belum ada data penjualan</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Reviews Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between mt-8">

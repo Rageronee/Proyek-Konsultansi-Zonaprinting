@@ -303,16 +303,25 @@ const Navbar = () => {
               {isAuthenticated ? (
                 <Button
                   variant="destructive"
-                  onClick={() => setShowLogoutConfirm(true)}
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    setShowLogoutConfirm(true);
+                  }}
                 >
                   Logout
                 </Button>
               ) : (
                 <div className="flex gap-3">
-                  <Button variant="outline" className="w-full" onClick={() => navigate("/login")}>
+                  <Button variant="outline" className="w-full" onClick={() => {
+                    navigate("/login");
+                    setIsMobileMenuOpen(false);
+                  }}>
                     Login
                   </Button>
-                  <Button className="gradient-primary text-primary-foreground shadow-glow w-full" onClick={() => navigate("/products")}>
+                  <Button className="gradient-primary text-primary-foreground shadow-glow w-full" onClick={() => {
+                    navigate("/products");
+                    setIsMobileMenuOpen(false);
+                  }}>
                     <Upload className="mr-2 h-4 w-4" />
                     Mulai Cetak
                   </Button>

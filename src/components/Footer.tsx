@@ -17,6 +17,7 @@ const Footer = () => {
     ],
     Support: [
       { label: "Contact", to: "/contact" },
+      { label: "FAQ", to: "/faq" },
     ],
   };
 
@@ -159,10 +160,10 @@ const Footer = () => {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-primary-foreground/80 dark:text-slate-400">
             <p>© 2025 ZONAPRINT X MKB UPI Purwakarta. All rights reserved.</p>
             <div className="flex gap-6">
-              <Link to="/about" className="hover:text-accent dark:hover:text-amber-400 transition-colors">
-                Privacy Policy
+              <Link to="/refund" className="hover:text-accent dark:hover:text-amber-400 transition-colors">
+                Refund Policy
               </Link>
-              <Link to="/about" className="hover:text-accent dark:hover:text-amber-400 transition-colors">
+              <Link to="/terms" className="hover:text-accent dark:hover:text-amber-400 transition-colors">
                 Terms & Conditions
               </Link>
             </div>
